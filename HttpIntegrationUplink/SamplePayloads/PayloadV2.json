@@ -1,0 +1,31 @@
+{
+   "app_id": "rak811wisnodetest",
+   "dev_id": "rak811wisnode1",
+   "hardware_serial": "1234567890123456",
+   "port": 1,
+   "counter": 1,
+   "confirmed": true,
+   "payload_raw": "VGlueUNMUiBMb1JhV0FO",
+   "metadata": {
+      "time": "2020-08-28T05:24:19.592931624Z",
+      "frequency": 924.4,
+      "modulation": "LORA",
+      "data_rate": "SF7BW125",
+      "coding_rate": "4/5",
+      "gateways": [
+         {
+            "gtw_id": "eui-b827ebfffe6c279d",
+            "timestamp": 2618690796,
+            "time": "2020-08-28T05:24:18.434412Z",
+            "channel": 6,
+            "rssi": -54,
+            "snr": 9.5,
+            "rf_chain": 0,
+            "latitude": -43.49889,
+            "longitude": 172.60101,
+            "altitude": 14
+         }
+      ]
+   },
+   "downlink_url": "https://integrations.thethingsnetwork.org/ttn-eu/api/v2/down/rak811wisnodetest/azure-webapi-endpoint?key=ttn-account-v2.12345678901234567_12345_1234567-dduo"
+}
