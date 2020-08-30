@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JsonDeserialisation": {
+      "commandName": "Project",
+      "commandLineArgs": "\"SamplePayloads\\PayloadWithAllFieldTypes.json\""
+    }
+  }
+}
