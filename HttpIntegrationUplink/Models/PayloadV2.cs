@@ -20,6 +20,8 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Models
    using System.Collections.Generic;
    using System.Text.Json.Serialization;
 
+   using devMobile.TheThingsNetwork.CustomConvertors;
+
    // Second version of classes for unpacking HTTP payload https://json2csharp.com/
    public class GatewayV2 // https://github.com/TheThingsNetwork/ttn/blob/36761935d1867ce2cd70a80ceef197a124e2d276/core/types/gateway_metadata.go
    {

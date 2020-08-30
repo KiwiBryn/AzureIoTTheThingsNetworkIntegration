@@ -18,8 +18,9 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Models
 {
    using System;
    using System.Collections.Generic;
-   using Newtonsoft.Json;
+   using System.Text.Json.Serialization;
 
+   using devMobile.TheThingsNetwork.CustomConvertors;
 
    // Forth version of classes for unpacking HTTP payload https://json2csharp.com/
    public class GatewayV4 // https://github.com/TheThingsNetwork/ttn/blob/36761935d1867ce2cd70a80ceef197a124e2d276/core/types/gateway_metadata.go

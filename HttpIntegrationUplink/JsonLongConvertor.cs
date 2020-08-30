@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.HttpIntegrationUplink
+namespace devMobile.TheThingsNetwork.CustomConvertors
 {
    using System;
 

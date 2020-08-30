@@ -20,6 +20,8 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Models
    using System.Collections.Generic;
    using System.Text.Json.Serialization;
 
+   using devMobile.TheThingsNetwork.CustomConvertors;
+
    // Third version of classes for unpacking HTTP payload https://json2csharp.com/
    public class Gps1V3
    {
