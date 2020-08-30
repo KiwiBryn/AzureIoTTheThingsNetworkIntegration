@@ -27,7 +27,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
 
    [Route("[controller]")]
    [ApiController]
-   public class ClassSerialisationV2BCDDecoded : ControllerBase
+   public class ClassSerialisationV2Base64Decoded : ControllerBase
    {
       private static readonly ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
