@@ -21,20 +21,15 @@
 
   <ItemGroup>
     <None Update="SamplePayloads\AnalogAndDigital.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="SamplePayloads\BarometricPressureRelativeHumidityTemperature.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SamplePayloads\GPSAccelerometerGyrometerJson.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="SamplePayloads\IMU.json">
+    </None>
+    <None Update="SamplePayloads\GPSAccelerometerGyrometer.json">
     </None>
     <None Update="SamplePayloads\LuminosityPresence.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="SamplePayloads\PayloadWithAllFieldTypes.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+     </None>
   </ItemGroup>
 
 </Project>
