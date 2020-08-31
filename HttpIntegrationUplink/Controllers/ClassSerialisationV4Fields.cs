@@ -22,8 +22,6 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
 
    using devMobile.AspNet.ErrorHandling;
    using devMobile.TheThingsNetwork.HttpIntegrationUplink.Models;
-   using System.Diagnostics;
-   using System.Text.Json;
 
    [Route("[controller]")]
    [ApiController]

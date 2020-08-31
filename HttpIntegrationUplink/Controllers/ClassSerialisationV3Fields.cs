@@ -23,7 +23,6 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
    using devMobile.AspNet.ErrorHandling;
    using devMobile.TheThingsNetwork.HttpIntegrationUplink.Models;
 
-
    [Route("[controller]")]
    [ApiController]
    public class ClassSerialisationV3Fields : ControllerBase
