@@ -18,9 +18,6 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Models
 {
    using System;
    using System.Collections.Generic;
-   using System.Text.Json.Serialization;
-
-   using devMobile.TheThingsNetwork.CustomConvertors;
 
    // Third version of classes for unpacking HTTP payload https://json2csharp.com/
    public class Gps1V3
@@ -42,9 +39,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Models
    public class GatewayV3 // https://github.com/TheThingsNetwork/ttn/blob/36761935d1867ce2cd70a80ceef197a124e2d276/core/types/gateway_metadata.go
    {
       public string gtw_id { get; set; }
-
-      [JsonConverter(typeof(LongConverter))]
-      public long timestamp { get; set; }
+      public ulong timestamp { get; set; }
       public DateTime time { get; set; }
       public int channel { get; set; }
       public int rssi { get; set; }

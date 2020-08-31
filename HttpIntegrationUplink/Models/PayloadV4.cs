@@ -18,17 +18,12 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Models
 {
    using System;
    using System.Collections.Generic;
-   using System.Text.Json.Serialization;
-
-   using devMobile.TheThingsNetwork.CustomConvertors;
 
    // Forth version of classes for unpacking HTTP payload https://json2csharp.com/
    public class GatewayV4 // https://github.com/TheThingsNetwork/ttn/blob/36761935d1867ce2cd70a80ceef197a124e2d276/core/types/gateway_metadata.go
    {
       public string gtw_id { get; set; }
-
-      [JsonConverter(typeof(LongConverter))]
-      public long timestamp { get; set; }
+      public ulong timestamp { get; set; }
       public DateTime time { get; set; }
       public int channel { get; set; }
       public int rssi { get; set; }
@@ -58,11 +53,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Models
       public int counter { get; set; }
       public bool is_retry { get; set; }
       public string payload_raw { get; set; }
-      //public JsonObject payload_fields { get; set; }
-      //public JObject payload_fields { get; set; }
-      //public JToken payload_fields { get; set; }
-      //public JContainer payload_fields { get; set; }
-      //public dynamic payload_fields { get; set; }
+      // finally settled on an Object
       public Object payload_fields { get; set; }
       public MetadataV4 metadata { get; set; }
       public string downlink_url { get; set; }

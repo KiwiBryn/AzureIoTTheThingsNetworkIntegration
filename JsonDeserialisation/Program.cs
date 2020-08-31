@@ -20,14 +20,10 @@ namespace devMobile.TheThingsNetwork.JsonDeserialisation
    using System.Collections.Generic;
    using System.IO;
    using System.Text.Json;
-   using System.Text.Json.Serialization;
-
-   using devMobile.TheThingsNetwork.CustomConvertors;
 
    public class Gateway // https://github.com/TheThingsNetwork/ttn/blob/36761935d1867ce2cd70a80ceef197a124e2d276/core/types/gateway_metadata.go
    {
       public string gtw_id { get; set; }
-      [JsonConverter(typeof(LongConverter))]
       public long timestamp { get; set; }
       public DateTime time { get; set; }
       public int channel { get; set; }
