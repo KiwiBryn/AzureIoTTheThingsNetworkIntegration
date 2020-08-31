@@ -6,13 +6,13 @@
    "counter": 1,
    "payload_raw": "AYj5W5MaV6MAAmsAcQAAAAAD6AGGAAAAAAAA",
    "payload_fields": {
-      "IMU": {
-         "accelerometer_0": {
+      "IMU_1": {
+         "accelerometer": {
             "x": 0,
             "y": 0,
             "z": 1
          },
-         "gyrometer_1": {
+         "gyrometer": {
             "x": 0,
             "y": 0,
             "z": 0
