@@ -17,21 +17,19 @@
 namespace devMobile.TheThingsNetwork.CustomConvertors
 {
    using System;
-
-   using System.Text.Json.Serialization;
    using System.Text.Json;
+   using System.Text.Json.Serialization;
 
    public class LongConverter : JsonConverter<long>
    {
-      public override long Read(
-          ref Utf8JsonReader reader,
-          Type typeToConvert,
-          JsonSerializerOptions options) =>
-              reader.GetInt64();
-      public override void Write(
-          Utf8JsonWriter writer,
-          long longValue,
-          JsonSerializerOptions options) =>
-              writer.WriteStringValue(longValue.ToString());
+      public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+      {
+         return reader.GetInt64();
+      }
+
+      public override void Write(Utf8JsonWriter writer, long longValue, JsonSerializerOptions options)
+      {
+         writer.WriteStringValue(longValue.ToString());
+      }
    }
 }
