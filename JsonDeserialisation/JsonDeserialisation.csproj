@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>devMobile.TheThingsNetwork.JsonDeserialisation</RootNamespace>
+    <StartupObject>devMobile.TheThingsNetwork.JsonDeserialisation.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

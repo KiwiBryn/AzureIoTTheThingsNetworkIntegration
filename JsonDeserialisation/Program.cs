@@ -61,6 +61,31 @@ namespace devMobile.TheThingsNetwork.JsonDeserialisation
 
    class Program
    {
+      static void EnumerateChildren( int indent, JsonElement jsonElement )
+      {
+         foreach (var property in jsonElement.EnumerateObject())
+         {
+            JsonElement child = (JsonElement)property.Value;
+
+            string prepend = string.Empty;
+            for( int index =0; index < indent; index++)
+            {
+               prepend += " ";
+            }
+               
+            if (child.ValueKind == JsonValueKind.Object)
+            {
+               Console.WriteLine($"{prepend}Name:{property.Name}");
+               EnumerateChildren(indent + 3, child);
+            }
+            else
+            {
+               Console.WriteLine($"{prepend}Name:{property.Name} Value:{property.Value}");
+            }
+         }
+      }
+
+
       static void Main(string[] args)
       {
          try
@@ -71,23 +96,8 @@ namespace devMobile.TheThingsNetwork.JsonDeserialisation
                Payload payload = JsonSerializer.Deserialize<Payload>(json);
 
                JsonElement jsonElement = (JsonElement)payload.payload_fields;
-               foreach (var property in jsonElement.EnumerateObject())
-               {
-                  if (property.Name.StartsWith("gps_"))
-                  {
-                     Console.WriteLine($"{property.Name}");
-                     JsonElement gpsElement = (JsonElement)property.Value;
-                     foreach (var gpsProperty in gpsElement.EnumerateObject())
-                     {
-                        Console.WriteLine($"   {gpsProperty.Name} : {gpsProperty.Value}");
-                     }
-                  }
-                  else
-                  {
-                     Console.WriteLine($"{property.Name} : {property.Value}");
-                  }
-               }
 
+               EnumerateChildren(0, jsonElement);
             }
          }
          catch (Exception ex)
@@ -97,6 +107,7 @@ namespace devMobile.TheThingsNetwork.JsonDeserialisation
 
          Console.WriteLine();
          Console.WriteLine("Press <enter> to exit");
+         
          Console.ReadLine();
       }
    }
