@@ -33,5 +33,5 @@
          }
       ]
    },
-   "downlink_url": "https://integrations.thethingsnetwork.org/ttn-eu/api/v2/down/rak811wisnodetest/azure-webapi-endpoint?key=ttn-account-v2.EGySLhSw_1XXHfG0vKsfnA2a_SeuDM_0IHU4l8-dduo"
+   "downlink_url": "https://integrations.thethingsnetwork.org/ttn-eu/api/v2/down/rak811wisnodetest/azure-webapi-endpoint?key=ttn-account-v2.12345678901234567_12345_1234567-dduo"
 }
