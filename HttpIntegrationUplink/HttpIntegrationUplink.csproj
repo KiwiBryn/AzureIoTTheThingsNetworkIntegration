@@ -17,7 +17,7 @@
     <Content Update="SamplePayloads\PayloadV2.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
-    <Content Update="SamplePayloads\PayloadWithAllFieldTypes.json">
+    <Content Update="SamplePayloads\PayloadWithSimpleFieldTypes.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
     <Content Update="SamplePayloads\PayloadWithGPSField.json">
