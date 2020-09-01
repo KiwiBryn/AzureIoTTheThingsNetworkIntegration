@@ -19,7 +19,66 @@ namespace devMobile.TheThingsNetwork.JsonDeserialisation
    using System;
    using System.Collections.Generic;
    using System.IO;
-   using System.Text.Json;
+
+   using Newtonsoft.Json;
+   using Newtonsoft.Json.Linq;
+
+   class Program
+   {
+      static void Main(string[] args)
+      {
+         try
+         {
+            using (StreamReader r = new StreamReader(args[0]))
+            {
+               Payload payload = JsonConvert.DeserializeObject<Payload>(File.ReadAllText(args[0]));
+
+               JObject payloadFields = (JObject)payload.payload_fields;
+
+               foreach (JProperty child in payloadFields.Children())
+               {
+                  EnumerateChildren(0, child);
+               }
+            }
+         }
+         catch (Exception ex)
+         {
+            Console.WriteLine(ex.Message);
+         }
+
+         Console.WriteLine();
+         Console.WriteLine("Press <enter> to exit");
+
+         Console.ReadLine();
+      }
+
+      static void EnumerateChildren(int indent, JToken token)
+      {
+         string prepend = string.Empty;
+         for (int index = 0; index < indent; index++)
+         {
+            prepend += " ";
+         }
+
+         if (token is JProperty)
+            if (token.First is JValue)
+            {
+               JProperty property = (JProperty)token;
+               Console.WriteLine($"{prepend} Name:{property.Name} Value:{property.Value}");
+            }
+            else
+            {
+               JProperty property = (JProperty)token;
+               Console.WriteLine($"{prepend}Name:{property.Name}");
+               indent = indent + 3;
+            }
+
+         foreach (JToken token2 in token.Children())
+         {
+            EnumerateChildren(indent, token2);
+         }
+      }
+   }
 
    public class Gateway // https://github.com/TheThingsNetwork/ttn/blob/36761935d1867ce2cd70a80ceef197a124e2d276/core/types/gateway_metadata.go
    {
@@ -57,58 +116,5 @@ namespace devMobile.TheThingsNetwork.JsonDeserialisation
       public Object payload_fields { get; set; }
       public Metadata metadata { get; set; }
       public string downlink_url { get; set; }
-   }
-
-   class Program
-   {
-      static void EnumerateChildren( int indent, JsonElement jsonElement )
-      {
-         foreach (var property in jsonElement.EnumerateObject())
-         {
-            JsonElement child = (JsonElement)property.Value;
-
-            string prepend = string.Empty;
-            for( int index =0; index < indent; index++)
-            {
-               prepend += " ";
-            }
-               
-            if (child.ValueKind == JsonValueKind.Object)
-            {
-               Console.WriteLine($"{prepend}Name:{property.Name}");
-               EnumerateChildren(indent + 3, child);
-            }
-            else
-            {
-               Console.WriteLine($"{prepend}Name:{property.Name} Value:{property.Value}");
-            }
-         }
-      }
-
-
-      static void Main(string[] args)
-      {
-         try
-         {
-            using (StreamReader r = new StreamReader(args[0]))
-            {
-               string json = r.ReadToEnd();
-               Payload payload = JsonSerializer.Deserialize<Payload>(json);
-
-               JsonElement jsonElement = (JsonElement)payload.payload_fields;
-
-               EnumerateChildren(0, jsonElement);
-            }
-         }
-         catch (Exception ex)
-         {
-            Console.WriteLine(ex.Message);
-         }
-
-         Console.WriteLine();
-         Console.WriteLine("Press <enter> to exit");
-         
-         Console.ReadLine();
-      }
    }
 }
