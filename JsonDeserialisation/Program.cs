@@ -54,11 +54,7 @@ namespace devMobile.TheThingsNetwork.JsonDeserialisation
 
       static void EnumerateChildren(int indent, JToken token)
       {
-         string prepend = string.Empty;
-         for (int index = 0; index < indent; index++)
-         {
-            prepend += " ";
-         }
+         string prepend = string.Empty.PadLeft(indent);
 
          if (token is JProperty)
             if (token.First is JValue)
