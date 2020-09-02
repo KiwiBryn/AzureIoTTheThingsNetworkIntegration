@@ -20,6 +20,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubDeviceClient
    using System.Collections.Generic;
    using System.IO;
    using System.Text;
+   using System.Threading.Tasks;
    using Microsoft.Azure.Devices.Client;
 
    using Newtonsoft.Json;
@@ -27,7 +28,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubDeviceClient
 
    class Program
    {
-      static void Main(string[] args)
+      static async Task Main(string[] args)
       {
          DeviceClient azureIoTHubClient;
          Payload payload;
@@ -41,7 +42,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubDeviceClient
 
             using (azureIoTHubClient = DeviceClient.CreateFromConnectionString(args[1], TransportType.Amqp))
             {
-               azureIoTHubClient.OpenAsync();
+               await azureIoTHubClient.OpenAsync();
 
                foreach (JProperty child in payloadFields.Children())
                {
@@ -51,9 +52,11 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubDeviceClient
                using (Message message = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryDataPoint))))
                {
                   Console.WriteLine(" {0:HH:mm:ss} AzureIoTHubDeviceClient SendEventAsync start", DateTime.UtcNow);
-                  azureIoTHubClient.SendEventAsync(message).GetAwaiter().GetResult();
+                  await azureIoTHubClient.SendEventAsync(message);
                   Console.WriteLine(" {0:HH:mm:ss} AzureIoTHubDeviceClient SendEventAsync finish", DateTime.UtcNow);
                }
+
+               await azureIoTHubClient.CloseAsync();
             }
          }
 			catch (Exception ex)
