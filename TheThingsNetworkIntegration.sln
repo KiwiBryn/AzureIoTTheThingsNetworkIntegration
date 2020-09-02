@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpIntegrationUplink", "Ht
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonDeserialisation", "JsonDeserialisation\JsonDeserialisation.csproj", "{1966F5CB-1598-4A4B-A7C2-334C7627DBBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureIoTHubDeviceClient", "AzureIoTHubDeviceClient\AzureIoTHubDeviceClient.csproj", "{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubDeviceClient", "AzureIoTHubDeviceClient\AzureIoTHubDeviceClient.csproj", "{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureDeviceProvisioningServiceClient", "AzureDeviceProvisioningServiceClient\AzureDeviceProvisioningServiceClient.csproj", "{C692C658-D424-461D-A1A0-CED23CCDA1D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C692C658-D424-461D-A1A0-CED23CCDA1D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C692C658-D424-461D-A1A0-CED23CCDA1D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C692C658-D424-461D-A1A0-CED23CCDA1D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C692C658-D424-461D-A1A0-CED23CCDA1D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
