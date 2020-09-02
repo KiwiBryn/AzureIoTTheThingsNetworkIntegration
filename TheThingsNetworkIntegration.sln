@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpIntegrationUplink", "HttpIntegrationUplink\HttpIntegrationUplink.csproj", "{EEDB68B1-AC3C-410E-B849-6A0CF2BCBF37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpIntegrationUplink", "HttpIntegrationUplink\HttpIntegrationUplink.csproj", "{EEDB68B1-AC3C-410E-B849-6A0CF2BCBF37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonDeserialisation", "JsonDeserialisation\JsonDeserialisation.csproj", "{1966F5CB-1598-4A4B-A7C2-334C7627DBBF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonDeserialisation", "JsonDeserialisation\JsonDeserialisation.csproj", "{1966F5CB-1598-4A4B-A7C2-334C7627DBBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureIoTHubDeviceClient", "AzureIoTHubDeviceClient\AzureIoTHubDeviceClient.csproj", "{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{1966F5CB-1598-4A4B-A7C2-334C7627DBBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1966F5CB-1598-4A4B-A7C2-334C7627DBBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1966F5CB-1598-4A4B-A7C2-334C7627DBBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
