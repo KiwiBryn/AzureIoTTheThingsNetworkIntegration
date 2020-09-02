@@ -38,7 +38,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
       [HttpPost]
       public IActionResult Post([FromBody] PayloadV4 payload)
       {
-         string propertiesUnpacked ="";
+         string payloadFieldsUnpacked = string.Empty;
          
          // Check that the post data is good
          if (!this.ModelState.IsValid)
@@ -57,13 +57,13 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
                JsonElement gpsElement = (JsonElement)property.Value;
                foreach (var gpsProperty in gpsElement.EnumerateObject())
                {
-                  propertiesUnpacked += $" Property Name:{gpsProperty.Name} Property Value:{gpsProperty.Value}\r\n";
+                  payloadFieldsUnpacked += $" Property Name:{gpsProperty.Name} Property Value:{gpsProperty.Value}\r\n";
                }
             }
-            propertiesUnpacked += $"Property Name:{property.Name} Property Value:{property.Value}\r\n";
+            payloadFieldsUnpacked += $"Property Name:{property.Name} Property Value:{property.Value}\r\n";
          }
 
-         log.Info(propertiesUnpacked);
+         log.Info(payloadFieldsUnpacked);
 
          return this.Ok();
       }
