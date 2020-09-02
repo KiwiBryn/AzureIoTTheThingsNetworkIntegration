@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------------
 namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
 {
+   using System.Text.Json;
    using Microsoft.AspNetCore.Mvc;
 
    using log4net;
@@ -37,6 +38,8 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
       [HttpPost]
       public IActionResult Post([FromBody] PayloadV4 payload)
       {
+         string propertiesUnpacked ="";
+         
          // Check that the post data is good
          if (!this.ModelState.IsValid)
          {
@@ -45,7 +48,22 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
             return this.BadRequest(this.ModelState);
          }
 
-         log.Info($"DevEUI:{payload.hardware_serial} Payload Base64:{payload.payload_raw}");
+         JsonElement jsonElement = (JsonElement)payload.payload_fields;
+         foreach (var property in jsonElement.EnumerateObject())
+         {
+            // Special handling for nested properties
+            if (property.Name.StartsWith("gps_") || property.Name.StartsWith("accelerometer_") || property.Name.StartsWith("gyrometer_"))
+            {
+               JsonElement gpsElement = (JsonElement)property.Value;
+               foreach (var gpsProperty in gpsElement.EnumerateObject())
+               {
+                  propertiesUnpacked += $" Property Name:{gpsProperty.Name} Property Value:{gpsProperty.Value}\r\n";
+               }
+            }
+            propertiesUnpacked += $"Property Name:{property.Name} Property Value:{property.Value}\r\n";
+         }
+
+         log.Info(propertiesUnpacked);
 
          return this.Ok();
       }
