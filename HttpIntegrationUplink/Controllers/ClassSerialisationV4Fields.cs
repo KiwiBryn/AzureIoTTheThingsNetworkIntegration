@@ -54,13 +54,17 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
             // Special handling for nested properties
             if (property.Name.StartsWith("gps_") || property.Name.StartsWith("accelerometer_") || property.Name.StartsWith("gyrometer_"))
             {
+               payloadFieldsUnpacked += $"Property Name:{property.Name}\r\n";
                JsonElement gpsElement = (JsonElement)property.Value;
                foreach (var gpsProperty in gpsElement.EnumerateObject())
                {
                   payloadFieldsUnpacked += $" Property Name:{gpsProperty.Name} Property Value:{gpsProperty.Value}\r\n";
                }
             }
-            payloadFieldsUnpacked += $"Property Name:{property.Name} Property Value:{property.Value}\r\n";
+            else
+            {
+               payloadFieldsUnpacked += $"Property Name:{property.Name} Property Value:{property.Value}\r\n";
+            }
          }
 
          log.Info(payloadFieldsUnpacked);
