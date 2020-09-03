@@ -30,17 +30,31 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubDeviceClient
    {
       static async Task Main(string[] args)
       {
+         string filename ;
+         string azureIoTHubconnectionString;
          DeviceClient azureIoTHubClient;
          Payload payload;
          JObject telemetryDataPoint = new JObject();
 
+         if (args.Length != 2)
+         {
+            Console.WriteLine("[JOSN file] [AzureIoTHubConnectionString] ");
+            Console.WriteLine("  or");
+            Console.WriteLine("[JOSN file] [AzureIoTCentralConnectionString] ");
+            Console.WriteLine("Press <enter> to exit");
+            Console.ReadLine();
+            return;
+         }
+         filename = args[0];
+         azureIoTHubconnectionString = args[1];
+
          try
-			{
-            payload = JsonConvert.DeserializeObject<Payload>(File.ReadAllText(args[0]));
+         {
+            payload = JsonConvert.DeserializeObject<Payload>(File.ReadAllText(filename));
 
             JObject payloadFields = (JObject)payload.payload_fields;
 
-            using (azureIoTHubClient = DeviceClient.CreateFromConnectionString(args[1], TransportType.Amqp))
+            using (azureIoTHubClient = DeviceClient.CreateFromConnectionString(azureIoTHubconnectionString, TransportType.Amqp))
             {
                await azureIoTHubClient.OpenAsync();
 
