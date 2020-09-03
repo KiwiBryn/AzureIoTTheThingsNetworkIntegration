@@ -42,7 +42,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
          // Check that the post data is good
          if (!this.ModelState.IsValid)
          {
-            log.WarnFormat("ClassSerialisationV2BCDDecoded validation failed {0}", this.ModelState.Messages());
+            log.WarnFormat("ClassSerialisationV2Base64Decoded validation failed {0}", this.ModelState.Messages());
 
             return this.BadRequest(this.ModelState);
          }

@@ -30,7 +30,7 @@ namespace devMobile.TheThingNetwork.HttpIntegrationUplink.Controllers
       [HttpGet]
       public string Index()
       {
-         return "move along nothing to see";
+         return "Raw move along nothing to see";
       }
 
       [HttpPost]

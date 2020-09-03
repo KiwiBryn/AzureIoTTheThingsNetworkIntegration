@@ -32,7 +32,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
 
       public string Index()
       {
-         return "move along nothing to see";
+         return "ClassSerialisationV4Fields move along nothing to see";
       }
 
       [HttpPost]
