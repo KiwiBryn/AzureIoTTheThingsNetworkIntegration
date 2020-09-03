@@ -42,6 +42,7 @@ namespace devMobile.TheThingsNetwork.AzureDeviceProvisioningServiceClient
             Console.WriteLine("K registrationID PrimaryGroupKey SecondaryGroupKey");
             Console.WriteLine("Press <enter> to exit");
             Console.ReadLine();
+            return;
          }
          registrationId = args[1];
 
