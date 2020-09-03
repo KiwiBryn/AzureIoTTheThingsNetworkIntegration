@@ -32,31 +32,35 @@ namespace devMobile.TheThingsNetwork.AzureDeviceProvisioningServiceClient
 
       static async Task Main(string[] args)
       {
-         string registrationId = args[1];
-         string scopeId;
-         string symmetricKey;
+         string registrationId;
+
+         if ( args.Length != 4 )
+         {
+            Console.WriteLine("E registrationID scopeID DeviceSymmetricKey");
+            Console.WriteLine("  or");
+            Console.WriteLine("E registrationID scopeID GroupSymmetricKey");
+            Console.WriteLine("K registrationID PrimaryGroupKey SecondaryGroupKey");
+            Console.WriteLine("Press <enter> to exit");
+            Console.ReadLine();
+         }
+         registrationId = args[1];
 
          switch (args[0])
          {
-            case "i":
-            case "I":
-               scopeId = args[2];
-               symmetricKey = args[3];
+            case "e":
+            case "E":
+               string scopeId = args[2];
+               string symmetricKey = args[3];
 
-               await IndividualEnrollement(registrationId, scopeId, symmetricKey);
-               break;
-            case "g":
-            case "G":
-               scopeId = args[2];
-               symmetricKey = args[3];
-
-               await GroupEnrollement(registrationId, scopeId, symmetricKey);
+               Console.WriteLine($"Enrolllment RegistrationID:{ registrationId} ScopeID:{scopeId}");
+               await Enrollement(registrationId, scopeId, symmetricKey);
                break;
             case "k":
             case "K":
                string primaryKey = args[2];
                string secondaryKey = args[3];
 
+               Console.WriteLine($"Enrollment Keys RegistrationID:{ registrationId}");
                GroupEnrollementKeys(registrationId, primaryKey, secondaryKey);
                break;
             case "":
@@ -70,65 +74,41 @@ namespace devMobile.TheThingsNetwork.AzureDeviceProvisioningServiceClient
          Console.ReadLine();
       }
 
-      static async Task IndividualEnrollement(string registrationId, string scopeId, string symmetricKey )
+      static async Task Enrollement(string registrationId, string scopeId, string symetricKey)
       {
-         using (var securityProvider = new SecurityProviderSymmetricKey(registrationId, symmetricKey, "" ))
+         try
          {
-            using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
+            using (var securityProvider = new SecurityProviderSymmetricKey(registrationId, symetricKey, null))
             {
-               ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, scopeId, securityProvider, transport);
-
-               DeviceRegistrationResult result = await provClient.RegisterAsync();
-
-               Console.WriteLine($"Hub:{result.AssignedHub} DeviceID:{result.DeviceId} RegistrationID:{result.RegistrationId} Status:{result.Status}");
-               if (result.Status != ProvisioningRegistrationStatusType.Assigned)
+               using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
                {
-                  Console.WriteLine($"DeviceID{ result.Status} already assigned");
-               }
+                  ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, scopeId, securityProvider, transport);
 
-               IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
+                  DeviceRegistrationResult result = await provClient.RegisterAsync();
 
-               using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp))
-               {
-                  Console.WriteLine("DeviceClient OpenAsync.");
-                  await iotClient.OpenAsync().ConfigureAwait(false);
-                  Console.WriteLine("DeviceClient SendEventAsync.");
-                  await iotClient.SendEventAsync(new Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
-                  Console.WriteLine("DeviceClient CloseAsync.");
-                  await iotClient.CloseAsync().ConfigureAwait(false);
+                  Console.WriteLine($"Hub:{result.AssignedHub} DeviceID:{result.DeviceId} RegistrationID:{result.RegistrationId} Status:{result.Status}");
+                  if (result.Status != ProvisioningRegistrationStatusType.Assigned)
+                  {
+                     Console.WriteLine($"DeviceID{ result.Status} already assigned");
+                  }
+
+                  IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
+
+                  using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp))
+                  {
+                     Console.WriteLine("DeviceClient OpenAsync.");
+                     await iotClient.OpenAsync().ConfigureAwait(false);
+                     Console.WriteLine("DeviceClient SendEventAsync.");
+                     await iotClient.SendEventAsync(new Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
+                     Console.WriteLine("DeviceClient CloseAsync.");
+                     await iotClient.CloseAsync().ConfigureAwait(false);
+                  }
                }
             }
          }
-      }
-
-      static async Task GroupEnrollement(string registrationId, string scopeId, string symetricKey)
-      {
-         using (var securityProvider = new SecurityProviderSymmetricKey(registrationId, symetricKey, null))
+         catch (Exception ex)
          {
-            using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
-            {
-               ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, scopeId, securityProvider, transport);
-
-               DeviceRegistrationResult result = await provClient.RegisterAsync();
-
-               Console.WriteLine($"Hub:{result.AssignedHub} DeviceID:{result.DeviceId} RegistrationID:{result.RegistrationId} Status:{result.Status}");
-               if (result.Status != ProvisioningRegistrationStatusType.Assigned)
-               {
-                  Console.WriteLine($"DeviceID{ result.Status} already assigned");
-               }
-
-               IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
-
-               using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp))
-               {
-                  Console.WriteLine("DeviceClient OpenAsync.");
-                  await iotClient.OpenAsync().ConfigureAwait(false);
-                  Console.WriteLine("DeviceClient SendEventAsync.");
-                  await iotClient.SendEventAsync(new Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
-                  Console.WriteLine("DeviceClient CloseAsync.");
-                  await iotClient.CloseAsync().ConfigureAwait(false);
-               }
-            }
+            Console.WriteLine(ex.Message);
          }
       }
 
@@ -137,7 +117,9 @@ namespace devMobile.TheThingsNetwork.AzureDeviceProvisioningServiceClient
          string primaryDeviceKey = ComputeDerivedSymmetricKey(Convert.FromBase64String(primaryKey), registrationId);
          string secondaryDeviceKey = ComputeDerivedSymmetricKey(Convert.FromBase64String(secondaryKey), registrationId);
 
-         Console.WriteLine($"RegistrationID:{registrationId} PrimaryDeviceKey:{primaryDeviceKey} SecondaryDeviceKey:{secondaryDeviceKey}");
+         Console.WriteLine($"RegistrationID:{registrationId}");
+         Console.WriteLine($" PrimaryDeviceKey:{primaryDeviceKey}");
+         Console.WriteLine($" SecondaryDeviceKey:{secondaryDeviceKey}");
       }
 
       public static string ComputeDerivedSymmetricKey(byte[] masterKey, string registrationId)
