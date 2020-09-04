@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonDeserialisation", "Json
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubDeviceClient", "AzureIoTHubDeviceClient\AzureIoTHubDeviceClient.csproj", "{27F247C8-0CA8-44F4-9F74-A2EF447CD03D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureDeviceProvisioningServiceClient", "AzureDeviceProvisioningServiceClient\AzureDeviceProvisioningServiceClient.csproj", "{C692C658-D424-461D-A1A0-CED23CCDA1D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureDeviceProvisioningServiceClient", "AzureDeviceProvisioningServiceClient\AzureDeviceProvisioningServiceClient.csproj", "{C692C658-D424-461D-A1A0-CED23CCDA1D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageQueueProcessor", "AzureStorageQueueProcessor\AzureStorageQueueProcessor.csproj", "{7067BCFD-98D0-447C-B644-21C902890542}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{C692C658-D424-461D-A1A0-CED23CCDA1D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C692C658-D424-461D-A1A0-CED23CCDA1D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C692C658-D424-461D-A1A0-CED23CCDA1D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7067BCFD-98D0-447C-B644-21C902890542}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7067BCFD-98D0-447C-B644-21C902890542}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7067BCFD-98D0-447C-B644-21C902890542}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7067BCFD-98D0-447C-B644-21C902890542}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
