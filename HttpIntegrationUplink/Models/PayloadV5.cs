@@ -19,7 +19,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Models
    using System;
    using System.Collections.Generic;
 
-   // Forth version of classes for unpacking HTTP payload https://json2csharp.com/
+   // Fifth version of classes for unpacking HTTP payload https://json2csharp.com/
    public class GatewayV5 // https://github.com/TheThingsNetwork/ttn/blob/36761935d1867ce2cd70a80ceef197a124e2d276/core/types/gateway_metadata.go
    {
       public string gtw_id { get; set; }
