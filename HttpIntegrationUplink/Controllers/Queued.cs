@@ -67,7 +67,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
 
             await queueClient.CreateIfNotExistsAsync();
 
-            await queueClient.SendMessageAsync(JsonSerializer.Serialize(payload));
+            await queueClient.SendMessageAsync(Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(payload)));
          }
          catch( Exception ex)
          {
