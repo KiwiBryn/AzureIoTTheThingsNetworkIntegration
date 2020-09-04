@@ -17,25 +17,39 @@
 namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
 {
    using System;
-   using log4net;
+   using System.Text.Json;
+
+   using Azure.Storage.Queues;
    using Microsoft.AspNetCore.Mvc;
+   using Microsoft.Extensions.Configuration;
+
+   using log4net;
 
    using devMobile.AspNet.ErrorHandling;
    using devMobile.TheThingsNetwork.HttpIntegrationUplink.Models;
+   using System.Threading.Tasks;
 
-   [Route("api/[controller]")]
+   [Route("[controller]")]
    [ApiController]
    public class Queued : ControllerBase
    {
+      private readonly string storageConnectionString;
+      private readonly string queueName;
       private static readonly ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+      public Queued( IConfiguration configuration)
+      {
+         this.storageConnectionString = configuration.GetSection("AzureStorageConnectionString").Value;
+         this.queueName = configuration.GetSection("UplinkQueueName").Value;
+      }
 
       public string Index()
       {
-         return "Queued move along nothing to see Queued";
+         return "Queued move along nothing to see";
       }
 
       [HttpPost]
-      public IActionResult Post([FromBody] PayloadV5 payload)
+      public async Task<IActionResult> Post([FromBody] PayloadV5 payload)
       {
          string payloadFieldsUnpacked = string.Empty;
 
@@ -45,6 +59,21 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
             log.WarnFormat("QueuedController validation failed {0}", this.ModelState.Messages());
 
             return this.BadRequest(this.ModelState);
+         }
+
+         try
+         {
+            QueueClient queueClient = new QueueClient(storageConnectionString, queueName);
+
+            await queueClient.CreateIfNotExistsAsync();
+
+            await queueClient.SendMessageAsync(JsonSerializer.Serialize(payload));
+         }
+         catch( Exception ex)
+         {
+            log.Error("Unable to open/create queue or send message", ex);
+
+            return this.Problem("Unable to open queue (creating if it doesn't exist) or send message", statusCode:500, title:"Uplink payload not sent" );
          }
 
          return this.Ok();
