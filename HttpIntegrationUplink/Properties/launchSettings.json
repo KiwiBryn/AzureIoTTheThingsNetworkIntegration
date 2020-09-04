@@ -14,6 +14,9 @@
       "launchBrowser": true,
       "launchUrl": "Raw",
       "environmentVariables": {
+        "UplinkQueueName": "ttnuplinkmessages",
+        "Key": "Value",
+        "AzureStorageConnectionString": "DefaultEndpointsProtocol=https;AccountName=ttmintegration;AccountKey=X1yDzpM/1H0pQkzMeCMrx4ZQugGoVKzLCFkrZOnIvh7FSBn0OVxcAdN/gbXrPLdfRmPT4jnR6hD9qki6MVAETA==;EndpointSuffix=core.windows.net",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "APPINSIGHTS_INSTRUMENTATIONKEY": "d7140cb6-29c9-428b-b9e2-0d139f36d110"
       }
