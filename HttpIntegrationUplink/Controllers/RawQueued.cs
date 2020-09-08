@@ -17,6 +17,7 @@
 namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
 {
    using System;
+   using System.Text;
    using System.Text.Json;
    using System.Threading.Tasks;
 
@@ -27,18 +28,16 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
    using log4net;
 
    using devMobile.AspNet.ErrorHandling;
-   using devMobile.TheThingsNetwork.HttpIntegrationUplink.Models;
-
 
    [Route("[controller]")]
    [ApiController]
-   public class Queued : ControllerBase
+   public class RawQueued : ControllerBase
    {
       private readonly string storageConnectionString;
       private readonly string queueName;
       private static readonly ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-      public Queued( IConfiguration configuration)
+      public RawQueued(IConfiguration configuration)
       {
          this.storageConnectionString = configuration.GetSection("AzureStorageConnectionString").Value;
          this.queueName = configuration.GetSection("UplinkQueueName").Value;
@@ -50,17 +49,17 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
       }
 
       [HttpPost]
-      public async Task<IActionResult> Post([FromBody] PayloadV5 payload)
+      public async Task<IActionResult> Post([FromBody] JsonElement body)
       {
-         string payloadFieldsUnpacked = string.Empty;
-
          // Check that the post data is good
          if (!this.ModelState.IsValid)
          {
-            log.WarnFormat("QueuedController validation failed {0}", this.ModelState.Messages());
+            log.WarnFormat("RawQueuedController validation failed {0}", this.ModelState.Messages());
 
             return this.BadRequest(this.ModelState);
          }
+
+         string payload = JsonSerializer.Serialize(body);
 
          try
          {
@@ -68,13 +67,13 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
 
             await queueClient.CreateIfNotExistsAsync();
 
-            await queueClient.SendMessageAsync(Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(payload)));
+            await queueClient.SendMessageAsync(Convert.ToBase64String( UTF8Encoding.UTF8.GetBytes(payload)));
          }
-         catch( Exception ex)
+         catch (Exception ex)
          {
             log.Error("Unable to open/create queue or send message", ex);
 
-            return this.Problem("Unable to open queue (creating if it doesn't exist) or send message", statusCode:500, title:"Uplink payload not sent" );
+            return this.Problem("Unable to open queue (creating if it doesn't exist) or send message", statusCode: 500, title: "Uplink payload not sent");
          }
 
          return this.Ok();
