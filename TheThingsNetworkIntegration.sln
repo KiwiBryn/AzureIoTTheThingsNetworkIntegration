@@ -11,7 +11,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubDeviceClient", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureDeviceProvisioningServiceClient", "AzureDeviceProvisioningServiceClient\AzureDeviceProvisioningServiceClient.csproj", "{C692C658-D424-461D-A1A0-CED23CCDA1D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageQueueProcessor", "AzureStorageQueueProcessor\AzureStorageQueueProcessor.csproj", "{7067BCFD-98D0-447C-B644-21C902890542}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessor", "AzureStorageQueueProcessor\AzureStorageQueueProcessor.csproj", "{7067BCFD-98D0-447C-B644-21C902890542}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UplinkMessageGenerator", "UplinkMessageGenerator\UplinkMessageGenerator.csproj", "{FD9131D4-CA26-4A9F-B2F5-F85CDDE37151}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorLog4Net", "AzureStorageQueueProcessorLog4Net\AzureStorageQueueProcessorLog4Net.csproj", "{823204AF-E176-4232-88EB-D6F868EA70CD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorApplicationInsights", "AzureStorageQueueProcessorApplicationInsights\AzureStorageQueueProcessorApplicationInsights.csproj", "{B35F21A0-70EF-4435-8C6F-B1DC070C8E93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageQueueProcessorLogger", "AzureStorageQueueProcessorLogger\AzureStorageQueueProcessorLogger.csproj", "{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +47,22 @@ Global
 		{7067BCFD-98D0-447C-B644-21C902890542}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7067BCFD-98D0-447C-B644-21C902890542}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7067BCFD-98D0-447C-B644-21C902890542}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD9131D4-CA26-4A9F-B2F5-F85CDDE37151}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD9131D4-CA26-4A9F-B2F5-F85CDDE37151}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD9131D4-CA26-4A9F-B2F5-F85CDDE37151}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD9131D4-CA26-4A9F-B2F5-F85CDDE37151}.Release|Any CPU.Build.0 = Release|Any CPU
+		{823204AF-E176-4232-88EB-D6F868EA70CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{823204AF-E176-4232-88EB-D6F868EA70CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{823204AF-E176-4232-88EB-D6F868EA70CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{823204AF-E176-4232-88EB-D6F868EA70CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B35F21A0-70EF-4435-8C6F-B1DC070C8E93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B35F21A0-70EF-4435-8C6F-B1DC070C8E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B35F21A0-70EF-4435-8C6F-B1DC070C8E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B35F21A0-70EF-4435-8C6F-B1DC070C8E93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
