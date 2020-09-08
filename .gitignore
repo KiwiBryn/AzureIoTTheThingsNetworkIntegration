@@ -341,3 +341,7 @@ healthchecksdb
 /AzureIoTHubDeviceClient/Properties/launchSettings.json
 /AzureStorageQueueProcessor/Properties/launchSettings.json
 /HttpIntegrationUplink/Properties/launchSettings.json
+/AzureStorageQueueProcessorLogger/Properties/launchSettings.json
+/AzureStorageQueueProcessorApplicationInsights/Properties/launchSettings.json
+/AzureStorageQueueProcessorLog4Net/Properties/launchSettings.json
+/UplinkMessageGenerator/Properties/launchSettings.json
