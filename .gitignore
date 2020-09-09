@@ -345,3 +345,4 @@ healthchecksdb
 /AzureStorageQueueProcessorApplicationInsights/Properties/launchSettings.json
 /AzureStorageQueueProcessorLog4Net/Properties/launchSettings.json
 /UplinkMessageGenerator/Properties/launchSettings.json
+/HttpIntegrationUplinkHttp/Properties/launchSettings.json
