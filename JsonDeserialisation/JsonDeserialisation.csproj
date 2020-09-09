@@ -15,25 +15,4 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="SamplePayloads\PayloadWithAllFieldTypes.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Resource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="SamplePayloads\AnalogAndDigital.json">
-    </None>
-    <None Update="SamplePayloads\BarometricPressureRelativeHumidityTemperature.json">
-    </None>
-    <None Update="SamplePayloads\IMU.json">
-    </None>
-    <None Update="SamplePayloads\GPSAccelerometerGyrometer.json">
-    </None>
-    <None Update="SamplePayloads\LuminosityPresence.json">
-     </None>
-  </ItemGroup>
-
 </Project>

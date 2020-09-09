@@ -23,6 +23,27 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpIntegrationUplinkFuncti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpIntegrationUplinkHttp", "HttpIntegrationUplinkHttp\HttpIntegrationUplinkHttp.csproj", "{63D085C4-169B-4815-9586-CB77A216A111}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SeeeduinoLoRaWANOTAA", "SeeeduinoLoRaWANOTAA", "{1FDE0FE5-F6BA-48BA-BF0B-8F795285A4C1}"
+	ProjectSection(SolutionItems) = preProject
+		SeeeduinoLoRaWANOTAA\SeeeduinoLoRaWANOTAA.ino = SeeeduinoLoRaWANOTAA\SeeeduinoLoRaWANOTAA.ino
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SeeeduinoLoRaWANCayenneLPP", "SeeeduinoLoRaWANCayenneLPP", "{6185D6DF-2E82-42E5-8FA7-88D720A908FD}"
+	ProjectSection(SolutionItems) = preProject
+		SeeeduinoLoRaWANCayenneLPP\SeeeduinoLoRaWANCayenneLPP.ino = SeeeduinoLoRaWANCayenneLPP\SeeeduinoLoRaWANCayenneLPP.ino
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SamplePayloads", "SamplePayloads", "{17B6CDE3-3FC5-4A82-B779-C1C86AED2EAE}"
+	ProjectSection(SolutionItems) = preProject
+		SamplePayloads\AnalogAndDigital.json = SamplePayloads\AnalogAndDigital.json
+		SamplePayloads\BarometricPressureRelativeHumidityTemperature.json = SamplePayloads\BarometricPressureRelativeHumidityTemperature.json
+		SamplePayloads\GPS.json = SamplePayloads\GPS.json
+		SamplePayloads\GPSAccelerometerGyrometer.json = SamplePayloads\GPSAccelerometerGyrometer.json
+		SamplePayloads\IMU.json = SamplePayloads\IMU.json
+		SamplePayloads\LuminosityPresence.json = SamplePayloads\LuminosityPresence.json
+		SamplePayloads\PayloadWithAllFieldTypes.json = SamplePayloads\PayloadWithAllFieldTypes.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

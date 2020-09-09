@@ -11,20 +11,5 @@
     <PackageReference Include="Microsoft.ApplicationInsights.Log4NetAppender" Version="2.14.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Update="SamplePayloads\PayloadV1.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
-    <Content Update="SamplePayloads\PayloadV2.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
-    <Content Update="SamplePayloads\PayloadWithSimpleFieldTypes.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
-    <Content Update="SamplePayloads\PayloadWithGPSField.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 
 </Project>
