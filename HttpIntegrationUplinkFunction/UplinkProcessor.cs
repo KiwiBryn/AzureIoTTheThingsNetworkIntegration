@@ -17,26 +17,29 @@
 namespace devMobile.TheThingsNetwork.HttpIntegrationUplink
 {
    using System.IO;
+   using System.Threading.Tasks;
    using Microsoft.AspNetCore.Http;
    using Microsoft.Azure.WebJobs;
+   using Microsoft.Azure.WebJobs.Extensions.Http;
    using Microsoft.Extensions.Logging;
 
    public static class UplinkProcessor
    {
       [FunctionName("UplinkProcessor")]
       [return: Queue("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
-      public static string Run([HttpTrigger("post", Route = null)] HttpRequest request, ILogger log)
+      //public static async Task<string> Run1([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest request, ILogger log)
+      public static async Task<string> Run([HttpTrigger("post", Route = null)] HttpRequest request, ILogger log)
       {
-         string input;
+         string payload;
 
          log.LogInformation("C# HTTP trigger function processed a request.");
 
          using (StreamReader streamReader = new StreamReader(request.Body))
          {
-            input = new StreamReader(request.Body).ReadToEnd();
+            payload = await streamReader.ReadToEndAsync();
          }
 
-         return input;
+         return payload;
       }
    }
 }
