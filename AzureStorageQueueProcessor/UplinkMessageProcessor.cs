@@ -18,24 +18,42 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessor
 {
    using System;
    using System.Threading;
-
+   using Microsoft.Azure.Storage.Queue;
    using Microsoft.Azure.WebJobs;
+   using Microsoft.Extensions.Logging;
 
    public static class UplinkMessageProcessor
    {
+      const string RunTag = "Processor001";
       static int ConcurrentThreadCount = 0;
+      static int MessagesProcessed = 0;
 
       [FunctionName("UplinkMessageProcessor")]
-      public static void Run([QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")] string myQueueItem, Microsoft.Azure.WebJobs.ExecutionContext executionContext)
+      public static void Run(
+         [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")] 
+         CloudQueueMessage cloudQueueMessage, 
+         IBinder binder, ILogger log)
       {
          try
          {
             Interlocked.Increment(ref ConcurrentThreadCount);
+            Interlocked.Increment(ref MessagesProcessed);
+
+            log.LogInformation($"{MessagesProcessed} {RunTag} Threads:{ConcurrentThreadCount}");
+
+            CloudQueue outputQueue = binder.Bind<CloudQueue>(new QueueAttribute("%UplinkQueueName%"));
+
+            CloudQueueMessage message = new CloudQueueMessage(cloudQueueMessage.AsString);
+
+            outputQueue.AddMessage(message, initialVisibilityDelay: new TimeSpan(0, 5, 0));
+    
+            Thread.Sleep(2000);
 
             Interlocked.Decrement(ref ConcurrentThreadCount);
          }
          catch (Exception ex)
          {
+            log.LogError(ex, "Processing of Uplink message failed");
 
             throw;
          }
