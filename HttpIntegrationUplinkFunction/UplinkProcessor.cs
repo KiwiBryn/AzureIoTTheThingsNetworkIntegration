@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.HttpIntegrationUplinkFunction
+namespace devMobile.TheThingsNetwork.HttpIntegrationUplink
 {
    using System.IO;
    using Microsoft.AspNetCore.Http;
