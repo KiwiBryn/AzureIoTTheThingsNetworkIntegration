@@ -33,7 +33,7 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorLogger
       static int MessagesProcessed = 0;
 
       [FunctionName("UplinkMessageProcessor")]
-      public static void Run([QueueTrigger("ttnuplinkmessages", Connection = "AzureStorageConnectionString")] string myQueueItem, ILogger log)
+      public static void Run([QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")] string myQueueItem, ILogger log)
       {
          try
          {
