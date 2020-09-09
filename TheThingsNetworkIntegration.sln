@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorApplicationInsights", "AzureStorageQueueProcessorApplicationInsights\AzureStorageQueueProcessorApplicationInsights.csproj", "{B35F21A0-70EF-4435-8C6F-B1DC070C8E93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageQueueProcessorLogger", "AzureStorageQueueProcessorLogger\AzureStorageQueueProcessorLogger.csproj", "{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorLogger", "AzureStorageQueueProcessorLogger\AzureStorageQueueProcessorLogger.csproj", "{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpIntegrationUplinkFunction", "HttpIntegrationUplinkFunction\HttpIntegrationUplinkFunction.csproj", "{5513031A-89E8-419B-A66B-723A803DD95D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5513031A-89E8-419B-A66B-723A803DD95D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5513031A-89E8-419B-A66B-723A803DD95D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5513031A-89E8-419B-A66B-723A803DD95D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5513031A-89E8-419B-A66B-723A803DD95D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
