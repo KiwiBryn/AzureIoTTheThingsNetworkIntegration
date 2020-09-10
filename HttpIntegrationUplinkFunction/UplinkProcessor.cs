@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------------
 namespace devMobile.TheThingsNetwork.HttpIntegrationUplinkFunction
 {
+   using System;
    using System.IO;
    using System.Threading.Tasks;
    using Microsoft.AspNetCore.Http;
@@ -27,16 +28,24 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplinkFunction
    {
       [FunctionName("UplinkProcessor")]
       [return: Queue("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
-      //public static async Task<string> Run1([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest request, ILogger log)
-      public static async Task<string> Run([HttpTrigger("post", Route = null)] HttpRequest request, ILogger log)
+      public static async Task<string> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest request, ILogger log)
       {
          string payload;
 
-         log.LogInformation("C# HTTP trigger function processed a request.");
-
-         using (StreamReader streamReader = new StreamReader(request.Body))
+         try
          {
-            payload = await streamReader.ReadToEndAsync();
+            log.LogInformation($"Processing Uplink HTTP post");
+
+            using (StreamReader streamReader = new StreamReader(request.Body))
+            {
+               payload = await streamReader.ReadToEndAsync();
+            }
+         }
+         catch( Exception ex)
+         {
+            log.LogError(ex, "Processing of Uplink HTTP post failed");
+
+            throw;
          }
 
          return payload;
