@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <UserSecretsId>3f056c9d-5e64-45f7-b888-1933e548dea5</UserSecretsId>
+    <RootNamespace>devMobile.TheThingsNetwork.AzureStorageQueueProcessorLog4Net</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Log4Net.config" />

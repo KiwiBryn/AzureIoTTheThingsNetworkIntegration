@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
+namespace devMobile.TheThingsNetwork.HttpIntegrationUplinkHttp.Controllers
 {
    using System;
    using System.Text;

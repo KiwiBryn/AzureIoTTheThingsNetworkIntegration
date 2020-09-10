@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingNetwork.HttpIntegrationUplink.Controllers
+namespace devMobile.TheThingNetwork.HttpIntegrationUplinkHttp.Controllers
 {
    using System.Text.Json;
    using Microsoft.AspNetCore.Mvc;

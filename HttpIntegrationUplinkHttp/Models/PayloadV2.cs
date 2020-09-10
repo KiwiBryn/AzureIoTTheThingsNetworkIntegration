@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Models
+namespace devMobile.TheThingsNetwork.HttpIntegrationUplinkHttp.Models
 {
    using System;
    using System.Collections.Generic;

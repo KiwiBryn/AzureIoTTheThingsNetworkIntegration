@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
+namespace devMobile.TheThingsNetwork.HttpIntegrationUplinkHttp.Controllers
 {
    using System;
    using System.Text.Json;
@@ -27,7 +27,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplink.Controllers
    using log4net;
 
    using devMobile.AspNet.ErrorHandling;
-   using devMobile.TheThingsNetwork.HttpIntegrationUplink.Models;
+   using devMobile.TheThingsNetwork.HttpIntegrationUplinkHttp.Models;
 
 
    [Route("[controller]")]

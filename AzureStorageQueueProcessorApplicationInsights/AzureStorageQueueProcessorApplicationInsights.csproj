@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <UserSecretsId>c40795cd-693a-4458-8c16-bef04b59469f</UserSecretsId>
+    <RootNamespace>devMobile.TheThingsNetwork.AzureStorageQueueProcessorApplicationInsights</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.14.0" />
