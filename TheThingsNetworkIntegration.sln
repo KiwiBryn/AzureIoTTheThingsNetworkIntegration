@@ -44,7 +44,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SamplePayloads", "SamplePay
 		SamplePayloads\PayloadWithAllFieldTypes.json = SamplePayloads\PayloadWithAllFieldTypes.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageUplinkQueueProcessorFunction", "AzureStorageQueueUplinkProcessorFunction\AzureStorageUplinkQueueProcessorFunction.csproj", "{AF3A0C34-2AF4-437F-8CD8-FFF40FC81247}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorFunction", "AzureStorageQueueProcessorFunction\AzureStorageQueueProcessorFunction.csproj", "{36470A3A-932C-4AC6-BC3B-4C6662EE51F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,10 +92,10 @@ Global
 		{63D085C4-169B-4815-9586-CB77A216A111}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63D085C4-169B-4815-9586-CB77A216A111}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63D085C4-169B-4815-9586-CB77A216A111}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AF3A0C34-2AF4-437F-8CD8-FFF40FC81247}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AF3A0C34-2AF4-437F-8CD8-FFF40FC81247}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AF3A0C34-2AF4-437F-8CD8-FFF40FC81247}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AF3A0C34-2AF4-437F-8CD8-FFF40FC81247}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36470A3A-932C-4AC6-BC3B-4C6662EE51F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36470A3A-932C-4AC6-BC3B-4C6662EE51F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36470A3A-932C-4AC6-BC3B-4C6662EE51F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36470A3A-932C-4AC6-BC3B-4C6662EE51F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

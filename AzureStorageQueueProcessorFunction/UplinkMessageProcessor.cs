@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.AzureStorageUplinkQueueProcessorFunction
+namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
 {
    using System;
    using System.Threading;
