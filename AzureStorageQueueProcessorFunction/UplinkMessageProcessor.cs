@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
+namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessor
 {
    using System;
    using System.Threading;
@@ -30,8 +30,8 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
 
       [FunctionName("UplinkMessageProcessor")]
       public static void Run(
-         [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
-         CloudQueueMessage cloudQueueMessage,
+         [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")] 
+         CloudQueueMessage cloudQueueMessage, 
          IBinder binder, ILogger log)
       {
          try
@@ -46,7 +46,7 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
             CloudQueueMessage message = new CloudQueueMessage(cloudQueueMessage.AsString);
 
             outputQueue.AddMessage(message, initialVisibilityDelay: new TimeSpan(0, 5, 0));
-
+    
             Thread.Sleep(2000);
 
             Interlocked.Decrement(ref ConcurrentThreadCount);
