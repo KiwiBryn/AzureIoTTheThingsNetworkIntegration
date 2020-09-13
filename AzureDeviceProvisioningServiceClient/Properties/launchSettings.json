@@ -1,7 +1,0 @@
-{
-  "profiles": {
-    "AzureDeviceProvisioningServiceClient": {
-      "commandName": "Project"
-    }
-  }
-}
