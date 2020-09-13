@@ -14,13 +14,14 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
+namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
 {
    using System;
    using System.Collections.Concurrent;
    using System.Security.Cryptography;
    using System.Text;
    using System.Threading.Tasks;
+
    using Microsoft.Azure.Devices.Client;
    using Microsoft.Azure.Devices.Provisioning.Client;
    using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -29,10 +30,11 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
    using Microsoft.Azure.WebJobs;
    using Microsoft.Extensions.Configuration;
    using Microsoft.Extensions.Logging;
+
    using Newtonsoft.Json;
    using Newtonsoft.Json.Linq;
 
-   using devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction.Models;
+   using devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor.Models;
 
    public static class UplinkMessageProcessor
    {
@@ -55,8 +57,8 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
 
       // Load configuration for DPS 
       var configuration = new ConfigurationBuilder()
-            //.SetBasePath(context.FunctionAppDirectory) bring these back for advanced configuration
-            //.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .SetBasePath(context.FunctionAppDirectory) 
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .Build();
 
@@ -69,7 +71,7 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
          }
          catch (Exception ex)
          {
-            log.LogError(ex, $"Error loading configuration globalDeviceEndpoint and/or enrollmentGroupKey and/or scopeID and/or deviceProvisiongPollingDelay not configured");
+            log.LogError(ex, $"Configuration loading failed");
             throw;
          }
 
@@ -79,7 +81,7 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
          }
          catch (Exception ex)
          {
-            log.LogError(ex, $"MessageID:{cloudQueueMessage.Id} payload deserialisation failed");
+            log.LogError(ex, $"MessageID:{cloudQueueMessage.Id} uplink message deserialisation failed");
             throw;
          }
 
@@ -88,8 +90,9 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
 
          // Construct the prefix used in all the logging
          string messagePrefix = $"MessageID: {cloudQueueMessage.Id} DeviceID:{registrationID} Counter:{payloadObect.counter} Application ID:{payloadObect.app_id}";
-         log.LogInformation(messagePrefix);
+         log.LogInformation($"{messagePrefix} Uplink message device processing start");
 
+         // See if the device has already been provisioned
          if (DeviceClients.TryAdd(registrationID, deviceClient))
          {
             log.LogInformation($"{messagePrefix} Device provisioning start");
@@ -108,9 +111,9 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
                      DeviceRegistrationResult result = await provClient.RegisterAsync();
                      if (result.Status != ProvisioningRegistrationStatusType.Assigned)
                      {
-                        throw new ApplicationException($" {messagePrefix} Status:{result.Status} RegisterAsync failed");
+                        throw new ApplicationException($"{messagePrefix} Status:{result.Status} RegisterAsync failed");
                      }
-                     log.LogInformation($"{messagePrefix} Status:{result.Status} AssignedHub:{result.AssignedHub}");
+                     log.LogInformation($"{messagePrefix} Device provisioned Status:{result.Status} AssignedHub:{result.AssignedHub}");
 
                      IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
 
@@ -118,7 +121,7 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
 
                      if (!DeviceClients.TryUpdate(registrationID, deviceClient, null))
                      {
-                        log.LogWarning($" {messagePrefix} TryUpdate failed");
+                        log.LogWarning($"{messagePrefix} Device provisoning TryUpdate failed");
                      }
                   }
                }
@@ -127,10 +130,10 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
             {
                if (DeviceClients.TryRemove(registrationID, out deviceClient))
                {
-                  log.LogWarning($" {messagePrefix} TryRemove failed");
+                  log.LogWarning($"{messagePrefix} Device provisoning TryRemove failed");
                }
 
-               log.LogError(ex, $" {messagePrefix} Device provisioning failed");
+               log.LogError(ex, $"{messagePrefix} Device provisioning failed");
                throw;
             }
          }
@@ -138,9 +141,9 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
          log.LogInformation($"{messagePrefix} Device provisioning polling start");
          if (!DeviceClients.TryGetValue(registrationID, out deviceClient))
          {
-            log.LogError($"{messagePrefix} TryGet while failed");
+            log.LogError($"{messagePrefix} Device provisioning polling TryGet while failed");
 
-            throw new ApplicationException($"{messagePrefix} TryGet while failed");
+            throw new ApplicationException($"{messagePrefix} Device provisioning polling TryGet while failed");
          }
 
          while (deviceClient == null)
@@ -157,21 +160,32 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
          }
 
          log.LogInformation($"{messagePrefix} Payload assembly start");
-         JObject telemetryDataPoint = new JObject();
+         JObject telemetryEvent = new JObject();
          try
          {
             JObject payloadFields = (JObject)payloadObect.payload_fields;
+            payloadFields.Add("HardwareSerial", payloadObect.hardware_serial);
+            payloadFields.Add("Counter", payloadObect.counter);
+            payloadFields.Add("DeviceID", payloadObect.dev_id);
+            payloadFields.Add("ApplicationID", payloadObect.app_id);
+            payloadFields.Add("Port", payloadObect.port);
+            payloadFields.Add("PayloadRaw", payloadObect.payload_raw);
+            payloadFields.Add("ReceivedAt", payloadObect.metadata.time);
 
-            foreach (JProperty child in payloadFields.Children())
+            // If the payload has been unpacked in TTN backend add fields
+            if (payloadFields != null)
             {
-               EnumerateChildren(telemetryDataPoint, child);
+               foreach (JProperty child in payloadFields.Children())
+               {
+                  EnumerateChildren(telemetryEvent, child);
+               }
             }
          }
          catch (Exception ex)
          {
             if (DeviceClients.TryRemove(registrationID, out deviceClient))
             {
-               log.LogWarning($"{messagePrefix} TryRemove failed");
+               log.LogWarning($"{messagePrefix} TryRemove payload assembly failed");
             }
 
             log.LogError(ex, $"{messagePrefix} Payload assembly failed");
@@ -181,7 +195,7 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
          log.LogInformation($"{messagePrefix} Payload SendEventAsync start");
          try
          { 
-            using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryDataPoint))))
+            using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
             {
                await deviceClient.SendEventAsync(ioTHubmessage);
             }
@@ -190,14 +204,14 @@ namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction
          {
             if (DeviceClients.TryRemove(registrationID, out deviceClient))
             {
-               log.LogWarning($"{messagePrefix} TryRemove failed");
+               log.LogWarning($"{messagePrefix} TryRemove SendEventAsync failed");
             }
 
             log.LogError(ex, $"{messagePrefix} SendEventAsync failed");
             throw;
          }
 
-         log.LogInformation($"{messagePrefix} Payload processing completed");
+         log.LogInformation($"{messagePrefix} Uplink message device processing completed");
       }
 
       static void EnumerateChildren(JObject jobject, JToken token)

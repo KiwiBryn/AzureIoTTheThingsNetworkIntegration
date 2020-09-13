@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction.Models
+namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor.Models
 {
    using System;
    using System.Collections.Generic;
