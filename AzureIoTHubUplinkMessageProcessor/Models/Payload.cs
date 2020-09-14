@@ -36,7 +36,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor.Models
 
    public class MetadataV5
    {
-      public string time { get; set; }
+      public DateTime time { get; set; }
       public double frequency { get; set; }
       public string modulation { get; set; }
       public string data_rate { get; set; }

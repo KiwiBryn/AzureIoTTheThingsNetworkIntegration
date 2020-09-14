@@ -19,6 +19,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
    using System;
    using System.Collections.Concurrent;
    using System.Security.Cryptography;
+   using System.Globalization;
    using System.Text;
    using System.Threading.Tasks;
 
@@ -199,6 +200,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          { 
             using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
             {
+               ioTHubmessage.Properties.Add("iothub-creation-time-utc", payloadObect.metadata.time.ToString("s", CultureInfo.InvariantCulture));
                await deviceClient.SendEventAsync(ioTHubmessage);
             }
          }
