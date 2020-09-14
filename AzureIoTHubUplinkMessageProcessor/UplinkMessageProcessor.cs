@@ -138,6 +138,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             }
          }
 
+         // Wait for the Device Provisiong Service(response) if this is first time have seen this device
          log.LogInformation($"{messagePrefix} Device provisioning polling start");
          if (!DeviceClients.TryGetValue(registrationID, out deviceClient))
          {
@@ -159,6 +160,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             }
          }
 
+         // Assemble the JSON payload to send to Azure IoT Hub/Central.
          log.LogInformation($"{messagePrefix} Payload assembly start");
          JObject telemetryEvent = new JObject();
          try
@@ -220,6 +222,25 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          {
             if (token.First is JValue)
             {
+               // Temporary dirty hack for Azure IoT Central
+               if (token.Parent is JObject possibleGpsProperty )
+               {
+                  if (possibleGpsProperty.Path.StartsWith("GPS", StringComparison.OrdinalIgnoreCase))
+                  {
+                     if (string.Compare(property.Name, "Latitude", true)==0)
+                     {
+                        jobject.Add("lat", property.Value);
+                     }
+                     if (string.Compare(property.Name, "Longitude", true) == 0)
+                     {
+                        jobject.Add("lon", property.Value);
+                     }
+                     if (string.Compare(property.Name, "Altitude", true) == 0)
+                     {
+                        jobject.Add("alt", property.Value);
+                     }
+                  }
+               }
                jobject.Add(property.Name, property.Value);
             }
             else
