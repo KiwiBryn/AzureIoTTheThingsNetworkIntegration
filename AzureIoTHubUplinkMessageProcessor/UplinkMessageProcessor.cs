@@ -56,7 +56,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          string scopeID;
          int deviceProvisioningPollingDelay;
 
-      // Load configuration for DPS 
+      // Load configuration for DPS. Refactor approach and store securely...
       var configuration = new ConfigurationBuilder()
             .SetBasePath(context.FunctionAppDirectory) 
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -76,6 +76,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             throw;
          }
 
+         // Deserialise uplink message from Azure storage queue
          try
          {
             payloadObect = JsonConvert.DeserializeObject<PayloadV5>(cloudQueueMessage.AsString);
@@ -139,13 +140,13 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             }
          }
 
-         // Wait for the Device Provisiong Service(response) if this is first time have seen this device
+         // Wait for the Device Provisiong Service to complete only really called if this is first time device seen
          log.LogInformation($"{messagePrefix} Device provisioning polling start");
          if (!DeviceClients.TryGetValue(registrationID, out deviceClient))
          {
-            log.LogError($"{messagePrefix} Device provisioning polling TryGet while failed");
+            log.LogError($"{messagePrefix} Device provisioning polling TryGet before while failed");
 
-            throw new ApplicationException($"{messagePrefix} Device provisioning polling TryGet while failed");
+            throw new ApplicationException($"{messagePrefix} Device provisioning polling TryGet before while failed");
          }
 
          while (deviceClient == null)
@@ -155,9 +156,9 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
 
             if (!DeviceClients.TryGetValue(registrationID, out deviceClient))
             {
-               log.LogError($"{messagePrefix} TryGet while loop failed");
+               log.LogError($"{messagePrefix} Device provisioning polling TryGet while loop failed");
 
-               throw new ApplicationException($"{messagePrefix} TryGet while loopfailed");
+               throw new ApplicationException($"{messagePrefix} Device provisioning polling TryGet while loopfailed");
             }
          }
 
@@ -167,15 +168,15 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          try
          {
             JObject payloadFields = (JObject)payloadObect.payload_fields;
-            payloadFields.Add("HardwareSerial", payloadObect.hardware_serial);
-            payloadFields.Add("Counter", payloadObect.counter);
-            payloadFields.Add("DeviceID", payloadObect.dev_id);
-            payloadFields.Add("ApplicationID", payloadObect.app_id);
-            payloadFields.Add("Port", payloadObect.port);
-            payloadFields.Add("PayloadRaw", payloadObect.payload_raw);
-            payloadFields.Add("ReceivedAt", payloadObect.metadata.time);
+            telemetryEvent.Add("HardwareSerial", payloadObect.hardware_serial);
+            telemetryEvent.Add("Counter", payloadObect.counter);
+            telemetryEvent.Add("DeviceID", payloadObect.dev_id);
+            telemetryEvent.Add("ApplicationID", payloadObect.app_id);
+            telemetryEvent.Add("Port", payloadObect.port);
+            telemetryEvent.Add("PayloadRaw", payloadObect.payload_raw);
+            telemetryEvent.Add("ReceivedAt", payloadObect.metadata.time);
 
-            // If the payload has been unpacked in TTN backend add fields
+            // If the payload has been unpacked in TTN backend add fields to telemetry event payload
             if (payloadFields != null)
             {
                foreach (JProperty child in payloadFields.Children())
@@ -195,11 +196,13 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             throw;
          }
 
+         // Send the message to Azure IoT Hub/Azure IoT Central
          log.LogInformation($"{messagePrefix} Payload SendEventAsync start");
          try
          { 
             using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
             {
+               // Ensure the displayed time is the acquired time rather than the uploaded time. esp. importan for messages that end up in poison queue
                ioTHubmessage.Properties.Add("iothub-creation-time-utc", payloadObect.metadata.time.ToString("s", CultureInfo.InvariantCulture));
                await deviceClient.SendEventAsync(ioTHubmessage);
             }
@@ -224,7 +227,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          {
             if (token.First is JValue)
             {
-               // Temporary dirty hack for Azure IoT Central
+               // Temporary dirty hack for Azure IoT Central compatibility
                if (token.Parent is JObject possibleGpsProperty )
                {
                   if (possibleGpsProperty.Path.StartsWith("GPS", StringComparison.OrdinalIgnoreCase))
