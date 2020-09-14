@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.HttpIntegrationUplinkFunction
+namespace devMobile.TheThingsNetwork.HttpIntegrationUplinkEndpoint
 {
    using System;
    using System.IO;
@@ -24,7 +24,7 @@ namespace devMobile.TheThingsNetwork.HttpIntegrationUplinkFunction
    using Microsoft.Azure.WebJobs.Extensions.Http;
    using Microsoft.Extensions.Logging;
 
-   public static class UplinkProcessor
+   public static class UplinkEndpointProcessor
    {
       [FunctionName("UplinkProcessor")]
       [return: Queue("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]

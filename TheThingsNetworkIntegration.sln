@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorLogger", "AzureStorageQueueProcessorLogger\AzureStorageQueueProcessorLogger.csproj", "{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpIntegrationUplinkFunction", "HttpIntegrationUplinkFunction\HttpIntegrationUplinkFunction.csproj", "{5513031A-89E8-419B-A66B-723A803DD95D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpIntegrationUplinkHttp", "HttpIntegrationUplinkHttp\HttpIntegrationUplinkHttp.csproj", "{63D085C4-169B-4815-9586-CB77A216A111}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SeeeduinoLoRaWANOTAA", "SeeeduinoLoRaWANOTAA", "{1FDE0FE5-F6BA-48BA-BF0B-8F795285A4C1}"
@@ -43,6 +41,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SamplePayloads", "SamplePay
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubUplinkMessageProcessor", "AzureIoTHubUplinkMessageProcessor\AzureIoTHubUplinkMessageProcessor.csproj", "{55681E71-C8AF-4845-873C-8B272844A0B7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTNHttpIntegrationUplinkEndpoint", "HttpIntegrationUplinkEndpoint\TTNHttpIntegrationUplinkEndpoint.csproj", "{122ADDF8-480F-409D-AEC5-473BEE8C6A50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,10 +78,6 @@ Global
 		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96B389EA-9CBB-4DBA-8A96-55B5366C9ADF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5513031A-89E8-419B-A66B-723A803DD95D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5513031A-89E8-419B-A66B-723A803DD95D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5513031A-89E8-419B-A66B-723A803DD95D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5513031A-89E8-419B-A66B-723A803DD95D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{63D085C4-169B-4815-9586-CB77A216A111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{63D085C4-169B-4815-9586-CB77A216A111}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63D085C4-169B-4815-9586-CB77A216A111}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -90,6 +86,10 @@ Global
 		{55681E71-C8AF-4845-873C-8B272844A0B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55681E71-C8AF-4845-873C-8B272844A0B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55681E71-C8AF-4845-873C-8B272844A0B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{122ADDF8-480F-409D-AEC5-473BEE8C6A50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{122ADDF8-480F-409D-AEC5-473BEE8C6A50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{122ADDF8-480F-409D-AEC5-473BEE8C6A50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{122ADDF8-480F-409D-AEC5-473BEE8C6A50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

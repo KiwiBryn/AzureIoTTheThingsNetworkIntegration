@@ -6,12 +6,6 @@
       "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
       "secretStore": null
     },
-    "storage1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
-      "type": "storage.azure",
-      "connectionId": "AzureWebJobsStorage",
-      "secretStore": null
-    },
     "storage3": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
       "type": "storage.azure",
@@ -22,6 +16,12 @@
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
       "type": "storage.azure",
       "connectionId": "AzureStorageConnectionString",
+      "secretStore": null
+    },
+    "storage1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
+      "type": "storage.azure",
+      "connectionId": "AzureWebJobsStorage",
       "secretStore": null
     }
   }
