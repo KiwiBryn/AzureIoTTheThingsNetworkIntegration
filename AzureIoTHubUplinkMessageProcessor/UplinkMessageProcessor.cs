@@ -18,6 +18,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
 {
    using System;
    using System.Collections.Concurrent;
+   using System.Collections.Generic;
    using System.Security.Cryptography;
    using System.Globalization;
    using System.Text;
@@ -51,24 +52,22 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
       {
          PayloadV5 payloadObect;
          DeviceClient deviceClient = null;
-         string globalDeviceEndpoint;
-         string enrollmentGroupSymmetricKey;
-         string scopeID;
-         int deviceProvisioningPollingDelay;
+         DeviceProvisioningServiceSettings deviceProvisioningServiceConfig;
 
-      // Load configuration for DPS. Refactor approach and store securely...
-      var configuration = new ConfigurationBuilder()
-            .SetBasePath(context.FunctionAppDirectory) 
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .Build();
+         string environmentName = Environment.GetEnvironmentVariable("ENVIRONMENT");
 
+         // Load configuration for DPS. Refactor approach and store securely...
+         var configuration = new ConfigurationBuilder()
+         .SetBasePath(context.FunctionAppDirectory)
+         .AddJsonFile($"appsettings.json")
+         .AddJsonFile($"appsettings.{environmentName}.json")
+         .AddEnvironmentVariables()
+         .Build();
+
+         // Load configuration for DPS. Refactor approach and store securely...
          try
          {
-            globalDeviceEndpoint = configuration.GetSection("GlobalDeviceEndpoint").Value;
-            enrollmentGroupSymmetricKey = configuration.GetSection("enrollmentGroupSymmetricKey").Value;
-            scopeID = configuration.GetSection("ScopeID").Value;
-            deviceProvisioningPollingDelay = int.Parse(configuration.GetSection("DeviceProvisioningPollingDelay").Value);
+            deviceProvisioningServiceConfig = (DeviceProvisioningServiceSettings)configuration.GetSection("DeviceProvisioningService").Get<DeviceProvisioningServiceSettings>(); ;
          }
          catch (Exception ex)
          {
@@ -99,48 +98,19 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          {
             log.LogInformation($"{messagePrefix} Device provisioning start");
 
-            // Do DPS magic first time device seen, ComputeDerivedSymmetricKey seperately so it can be inspected in debugger
-            string deviceKey = ComputeDerivedSymmetricKey(Convert.FromBase64String(enrollmentGroupSymmetricKey), registrationID);
+            string enrollmentGroupSymmetricKey = deviceProvisioningServiceConfig.EnrollmentGroupSymmetricKeyDefault;
 
-            try
+            // figure out if custom mapping for TTN applicationID
+            if (deviceProvisioningServiceConfig.ApplicationEnrollmentGroupMapping != null)
             {
-               using (var securityProvider = new SecurityProviderSymmetricKey(registrationID, deviceKey, null))
-               {
-                  using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
-                  {
-                     ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, scopeID, securityProvider, transport);
-
-                     DeviceRegistrationResult result = await provClient.RegisterAsync();
-                     if (result.Status != ProvisioningRegistrationStatusType.Assigned)
-                     {
-                        throw new ApplicationException($"{messagePrefix} Status:{result.Status} RegisterAsync failed");
-                     }
-                     log.LogInformation($"{messagePrefix} Device provisioned Status:{result.Status} AssignedHub:{result.AssignedHub}");
-
-                     IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
-
-                     deviceClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp);
-
-                     if (!DeviceClients.TryUpdate(registrationID, deviceClient, null))
-                     {
-                        log.LogWarning($"{messagePrefix} Device provisoning TryUpdate failed");
-                     }
-                  }
-               }
+               deviceProvisioningServiceConfig.ApplicationEnrollmentGroupMapping.GetValueOrDefault(payloadObect.app_id, deviceProvisioningServiceConfig.EnrollmentGroupSymmetricKeyDefault);
             }
-            catch (Exception ex)
-            {
-               if (DeviceClients.TryRemove(registrationID, out deviceClient))
-               {
-                  log.LogWarning($"{messagePrefix} Device provisoning TryRemove failed");
-               }
 
-               log.LogError(ex, $"{messagePrefix} Device provisioning failed");
-               throw;
-            }
+            // Do DPS magic first time device seen
+            await DeviceRegistration(log, messagePrefix, deviceProvisioningServiceConfig.GlobalDeviceEndpoint, deviceProvisioningServiceConfig.ScopeID, enrollmentGroupSymmetricKey, registrationID);
          }
 
-         // Wait for the Device Provisiong Service to complete only really called if this is first time device seen
+         // Wait for the Device Provisioning Service to complete on this or other thread
          log.LogInformation($"{messagePrefix} Device provisioning polling start");
          if (!DeviceClients.TryGetValue(registrationID, out deviceClient))
          {
@@ -152,7 +122,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          while (deviceClient == null)
          {
             log.LogInformation($"{messagePrefix} provisioning polling delay");
-            await Task.Delay(deviceProvisioningPollingDelay);
+            await Task.Delay(deviceProvisioningServiceConfig.DeviceProvisioningPollingDelay);
 
             if (!DeviceClients.TryGetValue(registrationID, out deviceClient))
             {
@@ -169,6 +139,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          {
             JObject payloadFields = (JObject)payloadObect.payload_fields;
             telemetryEvent.Add("HardwareSerial", payloadObect.hardware_serial);
+            telemetryEvent.Add("Retry", payloadObect.is_retry);
             telemetryEvent.Add("Counter", payloadObect.counter);
             telemetryEvent.Add("DeviceID", payloadObect.dev_id);
             telemetryEvent.Add("ApplicationID", payloadObect.app_id);
@@ -199,7 +170,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          // Send the message to Azure IoT Hub/Azure IoT Central
          log.LogInformation($"{messagePrefix} Payload SendEventAsync start");
          try
-         { 
+         {
             using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
             {
                // Ensure the displayed time is the acquired time rather than the uploaded time. esp. importan for messages that end up in poison queue
@@ -221,6 +192,50 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          log.LogInformation($"{messagePrefix} Uplink message device processing completed");
       }
 
+      static async Task DeviceRegistration(ILogger log, string messagePrefix, string globalDeviceEndpoint, string scopeId, string enrollmentGroupSymmetricKey, string registrationId)
+      {
+         DeviceClient deviceClient;
+
+         try
+         {
+            string deviceKey = ComputeDerivedSymmetricKey(Convert.FromBase64String(enrollmentGroupSymmetricKey), registrationId);
+
+            using (var securityProvider = new SecurityProviderSymmetricKey(registrationId, deviceKey, null))
+            {
+               using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
+               {
+                  ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, scopeId, securityProvider, transport);
+
+                  DeviceRegistrationResult result = await provClient.RegisterAsync();
+                  if (result.Status != ProvisioningRegistrationStatusType.Assigned)
+                  {
+                     throw new ApplicationException($"{messagePrefix} Status:{result.Status} RegisterAsync failed");
+                  }
+                  log.LogInformation($"{messagePrefix} Device provisioned Status:{result.Status} AssignedHub:{result.AssignedHub}");
+
+                  IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
+
+                  deviceClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp);
+
+                  if (!DeviceClients.TryUpdate(registrationId, deviceClient, null))
+                  {
+                     log.LogWarning($"{messagePrefix} Device provisoning TryUpdate failed");
+                  }
+               }
+            }
+         }
+         catch (Exception ex)
+         {
+            if (DeviceClients.TryRemove(registrationId, out deviceClient))
+            {
+               log.LogWarning($"{messagePrefix} Device provisoning TryRemove failed");
+            }
+
+            log.LogError(ex, $"{messagePrefix} Device provisioning failed");
+            throw;
+         }
+      }
+
       static void EnumerateChildren(JObject jobject, JToken token)
       {
          if (token is JProperty property)
@@ -228,11 +243,11 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             if (token.First is JValue)
             {
                // Temporary dirty hack for Azure IoT Central compatibility
-               if (token.Parent is JObject possibleGpsProperty )
+               if (token.Parent is JObject possibleGpsProperty)
                {
                   if (possibleGpsProperty.Path.StartsWith("GPS", StringComparison.OrdinalIgnoreCase))
                   {
-                     if (string.Compare(property.Name, "Latitude", true)==0)
+                     if (string.Compare(property.Name, "Latitude", true) == 0)
                      {
                         jobject.Add("lat", property.Value);
                      }

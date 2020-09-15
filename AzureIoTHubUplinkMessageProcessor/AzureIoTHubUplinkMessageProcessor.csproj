@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
-    <RootNamespace>devMobile.TheThingsNetwork.AzureStorageQueueProcessorFunction</RootNamespace>
+    <RootNamespace>devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor</RootNamespace>
     <UserSecretsId>f093c7b0-c82c-4070-8382-58523667563c</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -12,6 +12,13 @@
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="appsettings.Development.json">
+       <DependentUpon>appsettings.json</DependentUpon>
+       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
