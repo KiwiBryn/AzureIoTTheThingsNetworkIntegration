@@ -6,12 +6,6 @@
       "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
       "secretStore": null
     },
-    "storage3": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
-      "type": "storage.azure",
-      "connectionId": "AzureWebJobsDashboard",
-      "secretStore": null
-    },
     "storage2": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
       "type": "storage.azure",
