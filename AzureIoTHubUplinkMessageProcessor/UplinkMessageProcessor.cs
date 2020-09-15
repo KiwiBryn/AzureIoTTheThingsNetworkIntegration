@@ -47,16 +47,20 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
       public static async Task Run(
          [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
          CloudQueueMessage cloudQueueMessage, // Used to get CloudQueueMessage.Id for logging
-         Microsoft.Azure.WebJobs.ExecutionContext context,
+         ExecutionContext context,
          ILogger log)
       {
-         PayloadV5 payloadObect;
+         PayloadV5 payloadObect; // need to refactor and decorate Payload classes
          DeviceClient deviceClient = null;
          DeviceProvisioningServiceSettings deviceProvisioningServiceConfig;
 
          string environmentName = Environment.GetEnvironmentVariable("ENVIRONMENT");
+         if (string.IsNullOrEmpty(environmentName))
+         {
+            log.LogWarning( $"ENVIROnMENT not set using appsettings.json");
+         }
 
-         // Load configuration for DPS. Refactor approach and store securely...
+         // Load configuration for DPS. need to refactor approach and store securely...
          var configuration = new ConfigurationBuilder()
          .SetBasePath(context.FunctionAppDirectory)
          .AddJsonFile($"appsettings.json")
@@ -67,7 +71,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          // Load configuration for DPS. Refactor approach and store securely...
          try
          {
-            deviceProvisioningServiceConfig = (DeviceProvisioningServiceSettings)configuration.GetSection("DeviceProvisioningService").Get<DeviceProvisioningServiceSettings>(); ;
+            deviceProvisioningServiceConfig = (DeviceProvisioningServiceSettings)configuration.GetSection("DeviceProvisioningService").Get<DeviceProvisioningServiceSettings>();
          }
          catch (Exception ex)
          {
@@ -93,7 +97,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          string messagePrefix = $"MessageID: {cloudQueueMessage.Id} DeviceID:{registrationID} Counter:{payloadObect.counter} Application ID:{payloadObect.app_id}";
          log.LogInformation($"{messagePrefix} Uplink message device processing start");
 
-         // See if the device has already been provisioned
+         // See if the device has already been provisioned on another thread.
          if (DeviceClients.TryAdd(registrationID, deviceClient))
          {
             log.LogInformation($"{messagePrefix} Device provisioning start");
@@ -145,7 +149,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             telemetryEvent.Add("ApplicationID", payloadObect.app_id);
             telemetryEvent.Add("Port", payloadObect.port);
             telemetryEvent.Add("PayloadRaw", payloadObect.payload_raw);
-            telemetryEvent.Add("ReceivedAt", payloadObect.metadata.time);
+            telemetryEvent.Add("ReceivedAtUTC", payloadObect.metadata.time);
 
             // If the payload has been unpacked in TTN backend add fields to telemetry event payload
             if (payloadFields != null)
@@ -158,12 +162,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          }
          catch (Exception ex)
          {
-            if (DeviceClients.TryRemove(registrationID, out deviceClient))
-            {
-               log.LogWarning($"{messagePrefix} TryRemove payload assembly failed");
-            }
-
-            log.LogError(ex, $"{messagePrefix} Payload assembly failed");
+            log.LogError(ex, $"{messagePrefix} Payload processing or Telemetry event assembly failed");
             throw;
          }
 
@@ -173,7 +172,8 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          {
             using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
             {
-               // Ensure the displayed time is the acquired time rather than the uploaded time. esp. importan for messages that end up in poison queue
+               // Ensure the displayed time is the acquired time rather than the uploaded time. esp. important for when messages that ended up 
+               // in poison queue are returned to the processing queue. 
                ioTHubmessage.Properties.Add("iothub-creation-time-utc", payloadObect.metadata.time.ToString("s", CultureInfo.InvariantCulture));
                await deviceClient.SendEventAsync(ioTHubmessage);
             }
