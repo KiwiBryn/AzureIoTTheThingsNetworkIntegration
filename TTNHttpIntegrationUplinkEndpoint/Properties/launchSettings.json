@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HttpIntegrationUplinkFunction": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    }
+  }
+}
