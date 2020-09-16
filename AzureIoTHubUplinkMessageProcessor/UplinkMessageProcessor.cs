@@ -43,7 +43,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
       static readonly ConcurrentDictionary<string, DeviceClient> DeviceClients = new ConcurrentDictionary<string, DeviceClient>();
 
       [FunctionName("UplinkMessageProcessor")]
-      [Singleton] // used when debugging
+      //[Singleton] // used when debugging
       public static async Task Run(
          [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
          CloudQueueMessage cloudQueueMessage, // Used to get CloudQueueMessage.Id for logging
@@ -111,7 +111,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             }
 
             // Do DPS magic first time device seen
-            await DeviceRegistration(log, messagePrefix, deviceProvisioningServiceConfig.GlobalDeviceEndpoint, deviceProvisioningServiceConfig.ScopeID, enrollmentGroupSymmetricKey, registrationID);
+            await DeviceRegistration(log, messagePrefix, deviceProvisioningServiceConfig.GlobalDeviceEndpoint, deviceProvisioningServiceConfig.IdScope, enrollmentGroupSymmetricKey, registrationID);
          }
 
          // Wait for the Device Provisioning Service to complete on this or other thread
@@ -192,7 +192,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          log.LogInformation($"{messagePrefix} Uplink message device processing completed");
       }
 
-      static async Task DeviceRegistration(ILogger log, string messagePrefix, string globalDeviceEndpoint, string scopeId, string enrollmentGroupSymmetricKey, string registrationId)
+      static async Task DeviceRegistration(ILogger log, string messagePrefix, string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string registrationId)
       {
          DeviceClient deviceClient;
 
@@ -204,7 +204,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             {
                using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
                {
-                  ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, scopeId, securityProvider, transport);
+                  ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, IdScope, securityProvider, transport);
 
                   DeviceRegistrationResult result = await provClient.RegisterAsync();
                   if (result.Status != ProvisioningRegistrationStatusType.Assigned)

@@ -21,7 +21,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
    class DeviceProvisioningServiceSettings
    {
       public string GlobalDeviceEndpoint { get; set; }
-      public string ScopeID { get; set; }
+      public string IdScope { get; set; }
       public string EnrollmentGroupSymmetricKeyDefault { get; set; }
       public int DeviceProvisioningPollingDelay { get; set; }
       public Dictionary<string, string> ApplicationEnrollmentGroupMapping { get; set; }

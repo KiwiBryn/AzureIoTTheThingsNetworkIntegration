@@ -36,9 +36,9 @@ namespace devMobile.TheThingsNetwork.AzureDeviceProvisioningServiceClient
 
          if ( args.Length != 4 )
          {
-            Console.WriteLine("E registrationID scopeID DeviceSymmetricKey");
+            Console.WriteLine("E registrationID IDScope DeviceSymmetricKey");
             Console.WriteLine("  or");
-            Console.WriteLine("E registrationID scopeID GroupSymmetricKey");
+            Console.WriteLine("E registrationID IDScope GroupSymmetricKey");
             Console.WriteLine("K registrationID PrimaryGroupKey SecondaryGroupKey");
             Console.WriteLine("Press <enter> to exit");
             Console.ReadLine();
@@ -50,11 +50,11 @@ namespace devMobile.TheThingsNetwork.AzureDeviceProvisioningServiceClient
          {
             case "e":
             case "E":
-               string scopeId = args[2];
+               string IdScope = args[2];
                string symmetricKey = args[3];
 
-               Console.WriteLine($"Enrolllment RegistrationID:{ registrationId} ScopeID:{scopeId}");
-               await Enrollement(registrationId, scopeId, symmetricKey);
+               Console.WriteLine($"Enrolllment RegistrationID:{ registrationId} IDScope:{IdScope}");
+               await Enrollement(registrationId, IdScope, symmetricKey);
                break;
             case "k":
             case "K":
@@ -75,7 +75,7 @@ namespace devMobile.TheThingsNetwork.AzureDeviceProvisioningServiceClient
          Console.ReadLine();
       }
 
-      static async Task Enrollement(string registrationId, string scopeId, string symetricKey)
+      static async Task Enrollement(string registrationId, string idScope, string symetricKey)
       {
          try
          {
@@ -83,7 +83,7 @@ namespace devMobile.TheThingsNetwork.AzureDeviceProvisioningServiceClient
             {
                using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
                {
-                  ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, scopeId, securityProvider, transport);
+                  ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, idScope, securityProvider, transport);
 
                   DeviceRegistrationResult result = await provClient.RegisterAsync();
 
