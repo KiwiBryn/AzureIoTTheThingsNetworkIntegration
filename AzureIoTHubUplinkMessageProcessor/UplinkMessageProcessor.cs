@@ -57,7 +57,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          string environmentName = Environment.GetEnvironmentVariable("ENVIRONMENT");
          if (string.IsNullOrEmpty(environmentName))
          {
-            log.LogWarning( $"ENVIROnMENT not set using appsettings.json");
+            log.LogWarning( $"ENVIRONMENT variable not set using appsettings.json");
          }
 
          // Load configuration for DPS. need to refactor approach and store securely...
