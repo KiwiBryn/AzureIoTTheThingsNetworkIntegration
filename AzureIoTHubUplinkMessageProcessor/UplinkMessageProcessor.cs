@@ -180,7 +180,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          }
          catch (Exception ex)
          {
-            if (DeviceClients.TryRemove(registrationID, out deviceClient))
+            if (!DeviceClients.TryRemove(registrationID, out deviceClient))
             {
                log.LogWarning($"{messagePrefix} TryRemove SendEventAsync failed");
             }
@@ -226,7 +226,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          }
          catch (Exception ex)
          {
-            if (DeviceClients.TryRemove(registrationId, out deviceClient))
+            if (!DeviceClients.TryRemove(registrationId, out deviceClient))
             {
                log.LogWarning($"{messagePrefix} Device provisoning TryRemove failed");
             }
