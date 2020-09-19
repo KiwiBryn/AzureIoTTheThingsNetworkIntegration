@@ -91,7 +91,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          }
 
          // Extract the device ID as it's used lots of places
-         string registrationID = payloadObect.hardware_serial;
+         string registrationID = payloadObect.dev_id;
 
          // Construct the prefix used in all the logging
          string messagePrefix = $"MessageID: {cloudQueueMessage.Id} DeviceID:{registrationID} Counter:{payloadObect.counter} Application ID:{payloadObect.app_id}";
