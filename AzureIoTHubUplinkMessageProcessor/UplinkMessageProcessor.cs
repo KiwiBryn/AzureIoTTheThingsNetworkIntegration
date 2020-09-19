@@ -97,6 +97,17 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          string messagePrefix = $"MessageID: {cloudQueueMessage.Id} DeviceID:{registrationID} Counter:{payloadObect.counter} Application ID:{payloadObect.app_id}";
          log.LogInformation($"{messagePrefix} Uplink message device processing start");
 
+         deviceClient = await DeviceCreate(log, messagePrefix, deviceProvisioningServiceConfig, payloadObect.app_id, payloadObect.dev_id);
+
+         await DeviceTelemetrySend(log, messagePrefix, deviceClient, payloadObect);
+
+         log.LogInformation($"{messagePrefix} Uplink message device processing completed");
+      }
+
+      static async Task<DeviceClient> DeviceCreate(ILogger log, string messagePrefix, DeviceProvisioningServiceSettings deviceProvisioningServiceConfig, string applicationId, string registrationID )
+      {
+         DeviceClient deviceClient = null;
+
          // See if the device has already been provisioned on another thread.
          if (DeviceClients.TryAdd(registrationID, deviceClient))
          {
@@ -107,7 +118,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             // figure out if custom mapping for TTN applicationID
             if (deviceProvisioningServiceConfig.ApplicationEnrollmentGroupMapping != null)
             {
-               deviceProvisioningServiceConfig.ApplicationEnrollmentGroupMapping.GetValueOrDefault(payloadObect.app_id, deviceProvisioningServiceConfig.EnrollmentGroupSymmetricKeyDefault);
+               deviceProvisioningServiceConfig.ApplicationEnrollmentGroupMapping.GetValueOrDefault(applicationId, deviceProvisioningServiceConfig.EnrollmentGroupSymmetricKeyDefault);
             }
 
             // Do DPS magic first time device seen
@@ -135,7 +146,11 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
                throw new ApplicationException($"{messagePrefix} Device provisioning polling TryGet while loopfailed");
             }
          }
+         return deviceClient;
+      }
 
+      static async Task DeviceTelemetrySend(ILogger log, string messagePrefix, DeviceClient deviceClient, PayloadV5 payloadObect )
+      {
          // Assemble the JSON payload to send to Azure IoT Hub/Central.
          log.LogInformation($"{messagePrefix} Payload assembly start");
          JObject telemetryEvent = new JObject();
@@ -180,7 +195,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          }
          catch (Exception ex)
          {
-            if (!DeviceClients.TryRemove(registrationID, out deviceClient))
+            if (!DeviceClients.TryRemove(payloadObect.dev_id, out deviceClient))
             {
                log.LogWarning($"{messagePrefix} TryRemove SendEventAsync failed");
             }
@@ -189,7 +204,6 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             throw;
          }
 
-         log.LogInformation($"{messagePrefix} Uplink message device processing completed");
       }
 
       static async Task DeviceRegistration(ILogger log, string messagePrefix, string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string registrationId)
