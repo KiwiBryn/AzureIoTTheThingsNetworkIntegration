@@ -28,7 +28,6 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
    using Microsoft.Azure.Devices.Provisioning.Client;
    using Microsoft.Azure.Devices.Provisioning.Client.Transport;
    using Microsoft.Azure.Devices.Shared;
-   using Microsoft.Azure.Storage.Queue;
    using Microsoft.Azure.WebJobs;
    using Microsoft.Extensions.Configuration;
    using Microsoft.Extensions.Logging;
@@ -46,11 +45,10 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
       //[Singleton] // used when debugging
       public static async Task Run(
          [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
-         CloudQueueMessage cloudQueueMessage, // Used to get CloudQueueMessage.Id for logging
-         ExecutionContext context,
-         ILogger log)
+            PayloadV5 payloadObject,
+            ExecutionContext context,
+            ILogger log)
       {
-         PayloadV5 payloadObect; // need to refactor and decorate Payload classes
          DeviceClient deviceClient = null;
          DeviceProvisioningServiceSettings deviceProvisioningServiceConfig;
 
@@ -79,27 +77,13 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             throw;
          }
 
-         // Deserialise uplink message from Azure storage queue
-         try
-         {
-            payloadObect = JsonConvert.DeserializeObject<PayloadV5>(cloudQueueMessage.AsString);
-         }
-         catch (Exception ex)
-         {
-            log.LogError(ex, $"MessageID:{cloudQueueMessage.Id} uplink message deserialisation failed");
-            throw;
-         }
-
-         // Extract the device ID as it's used lots of places
-         string registrationID = payloadObect.dev_id;
-
          // Construct the prefix used in all the logging
-         string messagePrefix = $"MessageID: {cloudQueueMessage.Id} DeviceID:{registrationID} Counter:{payloadObect.counter} Application ID:{payloadObect.app_id}";
+         string messagePrefix = $"DeviceID:{payloadObject.dev_id} Counter:{payloadObject.counter} Application ID:{payloadObject.app_id}";
          log.LogInformation($"{messagePrefix} Uplink message device processing start");
 
-         deviceClient = await DeviceCreate(log, messagePrefix, deviceProvisioningServiceConfig, payloadObect.app_id, payloadObect.dev_id);
+         deviceClient = await DeviceCreate(log, messagePrefix, deviceProvisioningServiceConfig, payloadObject.app_id, payloadObject.dev_id);
 
-         await DeviceTelemetrySend(log, messagePrefix, deviceClient, payloadObect);
+         await DeviceTelemetrySend(log, messagePrefix, deviceClient, payloadObject);
 
          log.LogInformation($"{messagePrefix} Uplink message device processing completed");
       }
