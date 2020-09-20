@@ -39,6 +39,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
    public static class UplinkMessageProcessor
    {
       static readonly ConcurrentDictionary<string, DeviceClient> DeviceClients = new ConcurrentDictionary<string, DeviceClient>();
+      static IConfiguration Configuration = null;
 
       [FunctionName("UplinkMessageProcessor")]
       public static async Task Run(
@@ -48,22 +49,31 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             ILogger log)
       {
          DeviceClient deviceClient = null;
-         IConfiguration configuration = null;
 
-         // Load configuration from KeyVault some room for caching
-         try
+         // Check that KeyVault URI is configured in environment variables. Not a lot we can do if it isn't....
+         if (Configuration == null)
          {
-            configuration = new ConfigurationBuilder()
-               .SetBasePath(context.FunctionAppDirectory)
-               .AddJsonFile($"appsettings.json")
-               .AddEnvironmentVariables()
-               .AddAzureKeyVault("https://ttnconfiguration.vault.azure.net/")
-               .Build();
-         }
-         catch (Exception ex)
-         {
-            log.LogError(ex, $"Configuration loading failed");
-            throw;
+            string keyVaultUri = Environment.GetEnvironmentVariable("KeyVaultURI");
+            if (string.IsNullOrEmpty(keyVaultUri))
+            {
+               log.LogError("KeyVaultURI environment variable not set");
+               throw new ApplicationException("KeyVaultURI environment variable not set");
+            }
+
+            // Load configuration from KeyVault some room for caching
+            try
+            {
+               Configuration = new ConfigurationBuilder()
+                  .SetBasePath(context.FunctionAppDirectory)
+                  .AddEnvironmentVariables()
+                  .AddAzureKeyVault(keyVaultUri)
+                  .Build();
+            }
+            catch (Exception ex)
+            {
+               log.LogError(ex, $"Configuration loading failed");
+               throw;
+            }
          }
 
          // Construct the prefix used in all the logging
@@ -72,9 +82,9 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
 
          deviceClient = await DeviceCreate(log, 
             messagePrefix,
-            configuration.GetSection("DPSGlobaDeviceEndpoint").Value,
-            configuration.GetSection("DPSIDScope").Value,
-            configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value,
+            Configuration.GetSection("DPSGlobaDeviceEndpoint").Value,
+            Configuration.GetSection("DPSIDScope").Value,
+            Configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value,
             payloadObject.app_id, 
             payloadObject.dev_id);
 
