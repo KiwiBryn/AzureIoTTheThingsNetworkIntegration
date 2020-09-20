@@ -75,8 +75,8 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             configuration.GetSection("DPSGlobaDeviceEndpoint").Value,
             configuration.GetSection("DPSIDScope").Value,
             configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value,
-            payloadObect.app_id, 
-            payloadObect.dev_id);
+            payloadObject.app_id, 
+            payloadObject.dev_id);
 
          await DeviceTelemetrySend(log, messagePrefix, deviceClient, payloadObject);
 
