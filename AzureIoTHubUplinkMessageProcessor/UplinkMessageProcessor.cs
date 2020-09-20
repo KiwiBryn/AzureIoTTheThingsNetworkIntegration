@@ -42,7 +42,6 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
       static readonly ConcurrentDictionary<string, DeviceClient> DeviceClients = new ConcurrentDictionary<string, DeviceClient>();
 
       [FunctionName("UplinkMessageProcessor")]
-      //[Singleton] // used when debugging
       public static async Task Run(
          [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
             PayloadV5 payloadObject,
