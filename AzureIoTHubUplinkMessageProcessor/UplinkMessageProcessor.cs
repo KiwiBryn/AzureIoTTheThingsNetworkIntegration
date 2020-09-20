@@ -18,7 +18,6 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
 {
    using System;
    using System.Collections.Concurrent;
-   using System.Collections.Generic;
    using System.Security.Cryptography;
    using System.Globalization;
    using System.Text;
@@ -49,26 +48,17 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             ILogger log)
       {
          DeviceClient deviceClient = null;
-         DeviceProvisioningServiceSettings deviceProvisioningServiceConfig;
+         IConfiguration configuration = null;
 
-         string environmentName = Environment.GetEnvironmentVariable("ENVIRONMENT");
-         if (string.IsNullOrEmpty(environmentName))
-         {
-            log.LogWarning( $"ENVIRONMENT variable not set using appsettings.json");
-         }
-
-         // Load configuration for DPS. need to refactor approach and store securely...
-         var configuration = new ConfigurationBuilder()
-         .SetBasePath(context.FunctionAppDirectory)
-         .AddJsonFile($"appsettings.json")
-         .AddJsonFile($"appsettings.{environmentName}.json")
-         .AddEnvironmentVariables()
-         .Build();
-
-         // Load configuration for DPS. Refactor approach and store securely...
+         // Load configuration from KeyVault some room for caching
          try
          {
-            deviceProvisioningServiceConfig = (DeviceProvisioningServiceSettings)configuration.GetSection("DeviceProvisioningService").Get<DeviceProvisioningServiceSettings>();
+            configuration = new ConfigurationBuilder()
+               .SetBasePath(context.FunctionAppDirectory)
+               .AddJsonFile($"appsettings.json")
+               .AddEnvironmentVariables()
+               .AddAzureKeyVault("https://ttnconfiguration.vault.azure.net/")
+               .Build();
          }
          catch (Exception ex)
          {
@@ -80,14 +70,26 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          string messagePrefix = $"DeviceID:{payloadObject.dev_id} Counter:{payloadObject.counter} Application ID:{payloadObject.app_id}";
          log.LogInformation($"{messagePrefix} Uplink message device processing start");
 
-         deviceClient = await DeviceCreate(log, messagePrefix, deviceProvisioningServiceConfig, payloadObject.app_id, payloadObject.dev_id);
+         deviceClient = await DeviceCreate(log, 
+            messagePrefix,
+            configuration.GetSection("DPSGlobaDeviceEndpoint").Value,
+            configuration.GetSection("DPSIDScope").Value,
+            configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value,
+            payloadObect.app_id, 
+            payloadObect.dev_id);
 
          await DeviceTelemetrySend(log, messagePrefix, deviceClient, payloadObject);
 
          log.LogInformation($"{messagePrefix} Uplink message device processing completed");
       }
 
-      static async Task<DeviceClient> DeviceCreate(ILogger log, string messagePrefix, DeviceProvisioningServiceSettings deviceProvisioningServiceConfig, string applicationId, string registrationID )
+      static async Task<DeviceClient> DeviceCreate(ILogger log,
+         string messagePrefix,
+         string globalDeviceEndpoint,
+         string idScope,
+         string enrollmentGroupSymmetricKey,
+         string applicationId, 
+         string registrationID )
       {
          DeviceClient deviceClient = null;
 
@@ -96,16 +98,17 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          {
             log.LogInformation($"{messagePrefix} Device provisioning start");
 
-            string enrollmentGroupSymmetricKey = deviceProvisioningServiceConfig.EnrollmentGroupSymmetricKeyDefault;
-
+            /*
+            // Bring this back in once Azure KeyVault support is stable
             // figure out if custom mapping for TTN applicationID
             if (deviceProvisioningServiceConfig.ApplicationEnrollmentGroupMapping != null)
             {
                deviceProvisioningServiceConfig.ApplicationEnrollmentGroupMapping.GetValueOrDefault(applicationId, deviceProvisioningServiceConfig.EnrollmentGroupSymmetricKeyDefault);
             }
+            */
 
             // Do DPS magic first time device seen
-            await DeviceRegistration(log, messagePrefix, deviceProvisioningServiceConfig.GlobalDeviceEndpoint, deviceProvisioningServiceConfig.IdScope, enrollmentGroupSymmetricKey, registrationID);
+            await DeviceRegistration(log, messagePrefix, globalDeviceEndpoint, idScope, enrollmentGroupSymmetricKey, registrationID);
          }
 
          // Wait for the Device Provisioning Service to complete on this or other thread
@@ -120,7 +123,9 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          while (deviceClient == null)
          {
             log.LogInformation($"{messagePrefix} provisioning polling delay");
-            await Task.Delay(deviceProvisioningServiceConfig.DeviceProvisioningPollingDelay);
+            //await Task.Delay(deviceProvisioningServiceConfig.DeviceProvisioningPollingDelay);
+            // Temporary hack while sorting out keyvalut configuration, maybe move this to Environment variable as not sensitive
+            await Task.Delay(750);
 
             if (!DeviceClients.TryGetValue(registrationID, out deviceClient))
             {
