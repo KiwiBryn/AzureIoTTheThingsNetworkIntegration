@@ -56,6 +56,12 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             Log = log;
          }
 
+         // Quick n dirty hack to see what difference (if any) not processing retries makes
+         if (payloadObject.is_retry)
+         {
+            return;
+         }
+
          // Check that KeyVault URI is configured in environment variables. Not a lot we can do if it isn't....
          if (Configuration == null)
          {
@@ -81,7 +87,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             }
          }
 
-         Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Counter:{counter} Retry:{retry} Uplink message device processing start", payloadObject.dev_id, payloadObject.app_id, payloadObject.counter, payloadObject.is_retry);
+         Log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message device processing start", payloadObject.dev_id, payloadObject.app_id, payloadObject.counter);
 
          deviceClient = await DeviceClientCreate(
             Configuration.GetSection("DPSGlobaDeviceEndpoint").Value,
@@ -91,7 +97,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
 
          await DeviceTelemetrySend(deviceClient, payloadObject);
 
-         Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Counter:{counter} Retry:{retry} Uplink message device processing completed", payloadObject.dev_id, payloadObject.app_id, payloadObject.counter, payloadObject.is_retry);
+         Log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message device processing completed", payloadObject.dev_id, payloadObject.app_id, payloadObject.counter);
       }
 
       static async Task<DeviceClient> DeviceClientCreate(
@@ -148,7 +154,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
       static async Task DeviceTelemetrySend(DeviceClient deviceClient, PayloadV5 payloadObject )
       {
          // Assemble the JSON payload to send to Azure IoT Hub/Central.
-         Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Payload assembly start", payloadObject.dev_id, payloadObject.app_id);
+         Log.LogInformation("DevID:{dev_id} AppID:{app_id} Payload assembly start", payloadObject.dev_id, payloadObject.app_id);
 
          JObject telemetryEvent = new JObject();
          try
@@ -174,12 +180,12 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          }
          catch (Exception ex)
          {
-            Log.LogError(ex, "DevID:{registrationID} AppID:{applicationId} Payload processing or Telemetry event assembly failed", payloadObject.dev_id, payloadObject.app_id);
+            Log.LogError(ex, "DevID:{dev_id} AppID:{app_id} Payload processing or Telemetry event assembly failed", payloadObject.dev_id, payloadObject.app_id);
             throw;
          }
 
          // Send the message to Azure IoT Hub/Azure IoT Central
-         Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Payload SendEventAsync start", payloadObject.dev_id, payloadObject.app_id);
+         Log.LogInformation("DevID:{dev_id} AppID:{app_id} Payload SendEventAsync start", payloadObject.dev_id, payloadObject.app_id);
          try
          {
             using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
@@ -194,10 +200,10 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          {
             if (!DeviceClients.TryRemove(payloadObject.dev_id, out deviceClient))
             {
-               Log.LogWarning("DevID:{registrationID} AppID:{applicationId} Payload SendEventAsync TryRemove failed", payloadObject.dev_id, payloadObject.app_id);
+               Log.LogWarning("DevID:{dev_id} AppID:{app_id} Payload SendEventAsync TryRemove failed", payloadObject.dev_id, payloadObject.app_id);
             }
 
-            Log.LogError(ex, "DevID:{registrationID} AppID:{applicationId} SendEventAsync failed", payloadObject.dev_id, payloadObject.app_id);
+            Log.LogError(ex, "DevID:{dev_id} AppID:{app_id} SendEventAsync failed", payloadObject.dev_id, payloadObject.app_id);
             throw;
          }
       }
