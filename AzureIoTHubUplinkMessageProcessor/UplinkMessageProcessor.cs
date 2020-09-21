@@ -40,6 +40,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
    {
       static readonly ConcurrentDictionary<string, DeviceClient> DeviceClients = new ConcurrentDictionary<string, DeviceClient>();
       static IConfiguration Configuration = null;
+      static ILogger Log = null;
 
       [FunctionName("UplinkMessageProcessor")]
       public static async Task Run(
@@ -50,13 +51,19 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
       {
          DeviceClient deviceClient = null;
 
+         // I worry about threading for this and configuration 
+         if ( Log == null)
+         {
+            Log = log;
+         }
+
          // Check that KeyVault URI is configured in environment variables. Not a lot we can do if it isn't....
          if (Configuration == null)
          {
             string keyVaultUri = Environment.GetEnvironmentVariable("KeyVaultURI");
             if (string.IsNullOrEmpty(keyVaultUri))
             {
-               log.LogError("KeyVaultURI environment variable not set");
+               Log.LogError("KeyVaultURI environment variable not set");
                throw new ApplicationException("KeyVaultURI environment variable not set");
             }
 
@@ -71,25 +78,25 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             }
             catch (Exception ex)
             {
-               log.LogError(ex, $"Configuration loading failed");
+               Log.LogError(ex, $"Configuration loading failed");
                throw;
             }
          }
 
-         log.LogInformation("DevID:{registrationID} AppID:{applicationId} Uplink message device processing start", payloadObject.dev_id, payloadObject.app_id);
+         Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Uplink message device processing start", payloadObject.dev_id, payloadObject.app_id);
 
-         deviceClient = await DeviceCreate(log, 
+         deviceClient = await DeviceCreate(
             Configuration.GetSection("DPSGlobaDeviceEndpoint").Value,
             Configuration.GetSection("DPSIDScope").Value,
             payloadObject.app_id, 
             payloadObject.dev_id);
 
-         await DeviceTelemetrySend(log, deviceClient, payloadObject);
+         await DeviceTelemetrySend(deviceClient, payloadObject);
 
-         log.LogInformation("DevID:{registrationID} AppID:{applicationId} Uplink message device processing completed", payloadObject.dev_id, payloadObject.app_id);
+         Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Uplink message device processing completed", payloadObject.dev_id, payloadObject.app_id);
       }
 
-      static async Task<DeviceClient> DeviceCreate(ILogger log,
+      static async Task<DeviceClient> DeviceCreate(
          string globalDeviceEndpoint,
          string idScope,
          string applicationId, 
@@ -100,7 +107,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          // See if the device has already been provisioned on another thread.
          if (DeviceClients.TryAdd(registrationID, deviceClient))
          {
-            log.LogInformation("DevID:{registrationID} AppID:{applicationId} Device provisioning start", registrationID, applicationId);
+            Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Device provisioning start", registrationID, applicationId);
 
             string enrollmentGroupSymmetricKey = Configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value;
 
@@ -111,29 +118,29 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
             }
 
             // Do DPS magic first time device seen
-            await DeviceRegistration(log, globalDeviceEndpoint, idScope, enrollmentGroupSymmetricKey, registrationID, applicationId);
+            await DeviceRegistration(globalDeviceEndpoint, idScope, enrollmentGroupSymmetricKey, registrationID, applicationId);
          }
 
          // Wait for the Device Provisioning Service to complete on this or other thread
-         log.LogInformation("DevID:{registrationID} AppID:{applicationId} Device provisioning polling start", registrationID, applicationId);
+         Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Device provisioning polling start", registrationID, applicationId);
 
          if (!DeviceClients.TryGetValue(registrationID, out deviceClient))
          {
-            log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device provisioning polling TryGet before while failed", registrationID, applicationId);
+            Log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device provisioning polling TryGet before while failed", registrationID, applicationId);
 
             throw new ApplicationException($"DevID:{registrationID} AppID:{applicationId} Device provisioning polling TryGet before while failed");
          }
 
          while (deviceClient == null)
          {
-            log.LogInformation($"DevID:{registrationID} AppID:{applicationId} provisioning polling delay", registrationID, applicationId);
+            Log.LogInformation($"DevID:{registrationID} AppID:{applicationId} provisioning polling delay", registrationID, applicationId);
             //await Task.Delay(deviceProvisioningServiceConfig.DeviceProvisioningPollingDelay);
             // Temporary hack while sorting out keyvault configuration, maybe move this to Environment variable as not sensitive
             await Task.Delay(750);
 
             if (!DeviceClients.TryGetValue(registrationID, out deviceClient))
             {
-               log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device provisioning polling TryGet while loop failed", registrationID, applicationId);
+               Log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device provisioning polling TryGet while loop failed", registrationID, applicationId);
 
                throw new ApplicationException($"DevID:{registrationID} AppID:{applicationId} Device provisioning polling TryGet while loop failed");
             }
@@ -141,10 +148,10 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          return deviceClient;
       }
 
-      static async Task DeviceTelemetrySend(ILogger log, DeviceClient deviceClient, PayloadV5 payloadObect )
+      static async Task DeviceTelemetrySend(DeviceClient deviceClient, PayloadV5 payloadObect )
       {
          // Assemble the JSON payload to send to Azure IoT Hub/Central.
-         log.LogInformation("DevID:{registrationID} AppID:{applicationId} Payload assembly start", payloadObect.dev_id, payloadObect.app_id);
+         Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Payload assembly start", payloadObect.dev_id, payloadObect.app_id);
 
          JObject telemetryEvent = new JObject();
          try
@@ -170,12 +177,12 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          }
          catch (Exception ex)
          {
-            log.LogError(ex, "DevID:{registrationID} AppID:{applicationId} Payload processing or Telemetry event assembly failed", payloadObect.dev_id, payloadObect.app_id);
+            Log.LogError(ex, "DevID:{registrationID} AppID:{applicationId} Payload processing or Telemetry event assembly failed", payloadObect.dev_id, payloadObect.app_id);
             throw;
          }
 
          // Send the message to Azure IoT Hub/Azure IoT Central
-         log.LogInformation("DevID:{registrationID} AppID:{applicationId} Payload SendEventAsync start", payloadObect.dev_id, payloadObect.app_id);
+         Log.LogInformation("DevID:{registrationID} AppID:{applicationId} Payload SendEventAsync start", payloadObect.dev_id, payloadObect.app_id);
          try
          {
             using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
@@ -190,15 +197,15 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          {
             if (!DeviceClients.TryRemove(payloadObect.dev_id, out deviceClient))
             {
-               log.LogWarning("DevID:{registrationID} AppID:{applicationId} Payload SendEventAsync TryRemove failed", payloadObect.dev_id, payloadObect.app_id);
+               Log.LogWarning("DevID:{registrationID} AppID:{applicationId} Payload SendEventAsync TryRemove failed", payloadObect.dev_id, payloadObect.app_id);
             }
 
-            log.LogError(ex, "DevID:{registrationID} AppID:{applicationId} SendEventAsync failed", payloadObect.dev_id, payloadObect.app_id);
+            Log.LogError(ex, "DevID:{registrationID} AppID:{applicationId} SendEventAsync failed", payloadObect.dev_id, payloadObect.app_id);
             throw;
          }
       }
 
-      static async Task DeviceRegistration(ILogger log, string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string registrationId, string applicationId)
+      static async Task DeviceRegistration(string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string registrationId, string applicationId)
       {
          DeviceClient deviceClient;
 
@@ -217,7 +224,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
                   {
                      throw new ApplicationException($"DevID:{registrationId} AppID:{applicationId} RegisterAsync failed");
                   }
-                  log.LogInformation("DevID:{registrationId} AppID:{applicationId} Assigned IoTHub:{assignedHub}", registrationId, applicationId, result.AssignedHub);
+                  Log.LogInformation("DevID:{registrationId} AppID:{applicationId} Assigned IoTHub:{assignedHub}", registrationId, applicationId, result.AssignedHub);
 
                   IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
 
@@ -225,7 +232,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
 
                   if (!DeviceClients.TryUpdate(registrationId, deviceClient, null))
                   {
-                     log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device Registration TryUpdate failed", registrationId, applicationId);
+                     Log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device Registration TryUpdate failed", registrationId, applicationId);
                   }
                }
             }
@@ -234,10 +241,10 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          {
             if (!DeviceClients.TryRemove(registrationId, out deviceClient))
             {
-               log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device Registration TryRemove failed", registrationId, applicationId);
+               Log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device Registration TryRemove failed", registrationId, applicationId);
             }
 
-            log.LogError(ex, "DevID:{registrationID} AppID:{applicationId} Device Registration failed", registrationId, applicationId);
+            Log.LogError(ex, "DevID:{registrationID} AppID:{applicationId} Device Registration failed", registrationId, applicationId);
             throw;
          }
       }
