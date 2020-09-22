@@ -59,6 +59,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
          // Quick n dirty hack to see what difference (if any) not processing retries makes
          if (payloadObject.is_retry)
          {
+            Log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message retry", payloadObject.dev_id, payloadObject.app_id, payloadObject.counter);
             return;
          }
 
@@ -136,18 +137,25 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubUplinkMessageProcessor
 
          int deviceProvisioningPollingDelay = int.Parse(Configuration.GetSection("DeviceProvisioningPollingDelay").Value);
 
-         while (deviceClient == null)
+         // Wait for the deviceClient to be configured if process kicked off on another thread, not timeout as will get 
+         // taken care of by function timeout...
+         do
          {
-            Log.LogInformation($"DevID:{deviceId} AppID:{applicationId} provisioning polling delay:{deviceProvisioningPollingDelay}mSec", deviceId, applicationId, deviceProvisioningPollingDelay);
-            await Task.Delay(deviceProvisioningPollingDelay);
-
             if (!DeviceClients.TryGetValue(deviceId, out deviceClient))
             {
-               Log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device provisioning polling TryGet while loop failed", deviceId, applicationId);
+               Log.LogWarning("DevID:{deviceId} AppID:{applicationId} Device provisioning polling TryGet do while loop failed", deviceId, applicationId);
 
-               throw new ApplicationException($"DevID:{deviceId} AppID:{applicationId} Device provisioning polling TryGet while loop failed");
+               throw new ApplicationException($"DevID:{deviceId} AppID:{applicationId} Device provisioning polling TryGet do while loop failed");
+            }
+
+            if (deviceClient== null)
+            {
+               Log.LogInformation($"DevID:{deviceId} AppID:{applicationId} provisioning polling delay:{deviceProvisioningPollingDelay}mSec", deviceId, applicationId, deviceProvisioningPollingDelay);
+               await Task.Delay(deviceProvisioningPollingDelay);
             }
          }
+         while (deviceClient == null);
+
          return deviceClient;
       }
 
