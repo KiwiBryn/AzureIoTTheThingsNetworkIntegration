@@ -15,7 +15,19 @@
     "storage2": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
       "type": "storage.azure",
-      "connectionId": "AzureWebJobsStorage",
+      "connectionId": "AzureWebJobsAzureStorageConnectionString",
+      "secretStore": null
+    },
+    "storage3": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
+      "type": "storage.azure",
+      "connectionId": "AzureWebJobsDashboardConnectionString",
+      "secretStore": null
+    },
+    "storage4": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
+      "type": "storage.azure",
+      "connectionId": "AzureStorageConnectionString",
       "secretStore": null
     }
   }
