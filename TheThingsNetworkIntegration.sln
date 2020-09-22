@@ -46,6 +46,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorF
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTNHttpIntegrationUplinkEndpoint", "TTNHttpIntegrationUplinkEndpoint\TTNHttpIntegrationUplinkEndpoint.csproj", "{E8A89BB7-DE55-42DB-9441-32491DC097BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultClient", "AzureKeyVaultClient\AzureKeyVaultClient.csproj", "{EA12FBE1-E667-4827-8083-4D89A7699D6C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +98,10 @@ Global
 		{E8A89BB7-DE55-42DB-9441-32491DC097BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8A89BB7-DE55-42DB-9441-32491DC097BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8A89BB7-DE55-42DB-9441-32491DC097BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA12FBE1-E667-4827-8083-4D89A7699D6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA12FBE1-E667-4827-8083-4D89A7699D6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA12FBE1-E667-4827-8083-4D89A7699D6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA12FBE1-E667-4827-8083-4D89A7699D6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
