@@ -16,6 +16,10 @@ with [Azure DPS + IoT Hubs](http://blog.devmobile.co.nz/2020/09/16/the-things-ne
 9. [Simplicating and securing the HTTP handler](http://blog.devmobile.co.nz/2020/09/11/the-things-network-http-integration-part9/)
 10. [Assembling the components](http://blog.devmobile.co.nz/2020/09/15/the-things-network-http-integration-part10/)
 
+Then depending on your target platform I have an overview of configuration required
+* [Azure IoT Hub Integration](http://blog.devmobile.co.nz/2020/09/16/the-things-network-http-azure-iot-hub-integration/)
+* [Azure IoT Central Integration](http://blog.devmobile.co.nz/2020/09/17/the-things-network-http-azure-iot-central-integration/)
+
 The solution uses the [Azure Device Provisioning Service(DPS)](https://docs.microsoft.com/en-us/azure/iot-dps/about-iot-dps?WT.mc_id=IoT-MVP-5001375) [Group Enrollments with Symmetric Keys](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-symmetric-key-attestation?WT.mc_id=IoT-MVP-5001375) to "automagically" provision devices in Azure IoT Hus and Azure IoT Central instances.
 
 ![Azure Device Provisiong Service](DPSGroupEnrollmentKeys.JPG)
