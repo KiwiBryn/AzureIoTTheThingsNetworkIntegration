@@ -52,7 +52,7 @@ namespace devMobile.TheThingsNetwork.AzureKeyVaultClient
 
             var client = new SecretClient(new Uri(args[0]), credential, options);
 
-            //Retrieve Secret
+            //Retrieve Secret from KeyVault
             KeyVaultSecret secret = await client.GetSecretAsync(args[1]);
 
             Console.WriteLine($"ID:{secret.Id} value:{ secret.Value}");
