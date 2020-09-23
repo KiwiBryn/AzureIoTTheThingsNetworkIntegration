@@ -46,7 +46,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueueProcessorF
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTNHttpIntegrationUplinkEndpoint", "TTNHttpIntegrationUplinkEndpoint\TTNHttpIntegrationUplinkEndpoint.csproj", "{E8A89BB7-DE55-42DB-9441-32491DC097BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVaultClient", "AzureKeyVaultClient\AzureKeyVaultClient.csproj", "{EA12FBE1-E667-4827-8083-4D89A7699D6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureKeyVaultClient", "AzureKeyVaultClient\AzureKeyVaultClient.csproj", "{EA12FBE1-E667-4827-8083-4D89A7699D6C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubMessageV2Processor", "AzureIoTHubMessageV2Processor\AzureIoTHubMessageV2Processor.csproj", "{F1591208-0C6C-4B3A-B7E8-754E00EC0389}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -102,6 +104,10 @@ Global
 		{EA12FBE1-E667-4827-8083-4D89A7699D6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA12FBE1-E667-4827-8083-4D89A7699D6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA12FBE1-E667-4827-8083-4D89A7699D6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1591208-0C6C-4B3A-B7E8-754E00EC0389}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1591208-0C6C-4B3A-B7E8-754E00EC0389}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1591208-0C6C-4B3A-B7E8-754E00EC0389}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1591208-0C6C-4B3A-B7E8-754E00EC0389}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
