@@ -113,14 +113,14 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
 
             if (!DeviceClients.TryUpdate(registrationId, deviceClient, null))
             {
-               log.LogWarning("DevID:{registrationID} Device Registration TryUpdate failed", registrationId);
+               log.LogWarning("RegID:{registrationID} Device Registration TryUpdate failed", registrationId);
             }
 
-            log.LogInformation("DevID:{registrationId} Assigned to IoTHub", registrationId );
+            log.LogInformation("RegID:{registrationId} Assigned to IoTHub", registrationId );
          }
 
          // Wait for the Device Provisioning Service to complete on this or other thread
-         log.LogInformation("RegID:{registrationId} Device provisioning polling start", registrationId);
+         log.LogInformation("RegID:{registrationId} Device provisioning polling start", payload.dev_id);
 
          int deviceProvisioningPollingDelay = DpsDeviceProvisioningPollingDelay(Configuration);
 
@@ -136,17 +136,30 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
 
             if (deviceClient == null)
             {
-               log.LogInformation($"RegID:{registrationId} Device provisioning polling delay:{deviceProvisioningPollingDelay}mSec", registrationId, deviceProvisioningPollingDelay);
+               log.LogInformation($"DevID:{registrationId} Device provisioning polling delay:{deviceProvisioningPollingDelay}mSec", registrationId, deviceProvisioningPollingDelay);
                await Task.Delay(deviceProvisioningPollingDelay);
             }
          }
          while (deviceClient == null);
 
-         log.LogInformation("RegID:{registrationId} Device provisioning polling completed", registrationId);
+         log.LogInformation("DevID:{dev_id} Counter:{counter} Payload Send start", payload.dev_id, payload.counter);
 
-         await DeviceTelemetrySend(log, deviceClient, payload);
+         try
+         {
+            await DeviceTelemetrySend(deviceClient, payload);
+         }
+         catch (Exception ex)
+         {
+            if (!DeviceClients.TryRemove(registrationId, out deviceClient))
+            {
+               log.LogWarning("DevID:{dev_id} Counter:{counter} Payload SendEventAsync TryRemove failed", payload.dev_id, payload.counter);
+            }
 
-         log.LogInformation("DevID:{deviceId} AppID:{app_id} Counter:{counter} Uplink message device processing completed", payload.dev_id, payload.app_id, payload.counter);
+            log.LogError(ex, "DevID:{dev_id} Counter:{counter} Telemetry event send failed", payload.dev_id, payload.counter);
+            throw;
+         }
+
+         log.LogInformation("DevID:{deviceId} Counter:{counter} Uplink message device processing completed", payload.dev_id, payload.counter);
       }
 
       static string DpsGlobaDeviceEndpointResolve(IConfiguration configuration)
@@ -248,60 +261,36 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          return deviceClient;
       }
 
-      static async Task DeviceTelemetrySend(ILogger log, DeviceClient deviceClient, PayloadUplink payloadObject)
+      static async Task DeviceTelemetrySend(DeviceClient deviceClient, PayloadUplink payloadObject)
       {
-         // Assemble the JSON payload to send to Azure IoT Hub/Central.
-         log.LogInformation("DevID:{dev_id} AppID:{app_id} Payload assembly start", payloadObject.dev_id, payloadObject.app_id);
-
          JObject telemetryEvent = new JObject();
-         try
-         {
-            JObject payloadFields = (JObject)payloadObject.payload_fields;
-            telemetryEvent.Add("HardwareSerial", payloadObject.hardware_serial);
-            telemetryEvent.Add("Retry", payloadObject.is_retry);
-            telemetryEvent.Add("Counter", payloadObject.counter);
-            telemetryEvent.Add("DeviceID", payloadObject.dev_id);
-            telemetryEvent.Add("ApplicationID", payloadObject.app_id);
-            telemetryEvent.Add("Port", payloadObject.port);
-            telemetryEvent.Add("PayloadRaw", payloadObject.payload_raw);
-            telemetryEvent.Add("ReceivedAtUTC", payloadObject.metadata.time);
 
-            // If the payload has been unpacked in TTN backend add fields to telemetry event payload
-            if (payloadFields != null)
-            {
-               foreach (JProperty child in payloadFields.Children())
-               {
-                  EnumerateChildren(telemetryEvent, child);
-               }
-            }
-         }
-         catch (Exception ex)
+         JObject payloadFields = (JObject)payloadObject.payload_fields;
+         telemetryEvent.Add("HardwareSerial", payloadObject.hardware_serial);
+         telemetryEvent.Add("Retry", payloadObject.is_retry);
+         telemetryEvent.Add("Counter", payloadObject.counter);
+         telemetryEvent.Add("DeviceID", payloadObject.dev_id);
+         telemetryEvent.Add("ApplicationID", payloadObject.app_id);
+         telemetryEvent.Add("Port", payloadObject.port);
+         telemetryEvent.Add("PayloadRaw", payloadObject.payload_raw);
+         telemetryEvent.Add("ReceivedAtUTC", payloadObject.metadata.time);
+
+         // If the payload has been unpacked in TTN backend add fields to telemetry event payload
+         if (payloadFields != null)
          {
-            log.LogError(ex, "DevID:{dev_id} AppID:{app_id} Payload processing or Telemetry event assembly failed", payloadObject.dev_id, payloadObject.app_id);
-            throw;
+            foreach (JProperty child in payloadFields.Children())
+            {
+               EnumerateChildren(telemetryEvent, child);
+            }
          }
 
          // Send the message to Azure IoT Hub/Azure IoT Central
-         log.LogInformation("DevID:{dev_id} AppID:{app_id} Payload SendEventAsync start", payloadObject.dev_id, payloadObject.app_id);
-         try
+         using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
          {
-            using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
-            {
-               // Ensure the displayed time is the acquired time rather than the uploaded time. esp. important for when messages that ended up 
-               // in poison queue are returned to the processing queue. 
-               ioTHubmessage.Properties.Add("iothub-creation-time-utc", payloadObject.metadata.time.ToString("s", CultureInfo.InvariantCulture));
-               await deviceClient.SendEventAsync(ioTHubmessage);
-            }
-         }
-         catch (Exception ex)
-         {
-            if (!DeviceClients.TryRemove(payloadObject.dev_id, out deviceClient))
-            {
-               log.LogWarning("DevID:{dev_id} AppID:{app_id} Payload SendEventAsync TryRemove failed", payloadObject.dev_id, payloadObject.app_id);
-            }
-
-            log.LogError(ex, "DevID:{dev_id} AppID:{app_id} SendEventAsync failed", payloadObject.dev_id, payloadObject.app_id);
-            throw;
+            // Ensure the displayed time is the acquired time rather than the uploaded time. esp. important for when messages that ended up 
+            // in poison queue are returned to the processing queue. 
+            ioTHubmessage.Properties.Add("iothub-creation-time-utc", payloadObject.metadata.time.ToString("s", CultureInfo.InvariantCulture));
+            await deviceClient.SendEventAsync(ioTHubmessage);
          }
       }
 
