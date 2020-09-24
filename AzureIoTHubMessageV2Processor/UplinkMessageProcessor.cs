@@ -38,30 +38,26 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
 
    public static class UplinkMessageProcessor
    {
+      const string DpsGlobaDeviceEndpointDefault = "global.azure-devices-provisioning.net";
       static readonly ConcurrentDictionary<string, DeviceClient> DeviceClients = new ConcurrentDictionary<string, DeviceClient>();
       static IConfiguration Configuration = null;
-      static ILogger Log = null;
 
       [FunctionName("UplinkMessageProcessor")]
-      public static async Task Run(
+      public static async Task UplinkRun(
          [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
-            PayloadUplink payloadObject,
+            PayloadUplink payload,
             ILogger log)
       {
          DeviceClient deviceClient = null;
 
-         // I worry about threading for this and configuration 
-         if (Log == null)
-         {
-            Log = log;
-         }
-
          // Quick n dirty hack to see what difference (if any) not processing retries makes
-         if (payloadObject.is_retry)
+         if (payload.is_retry)
          {
-            Log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message retry", payloadObject.dev_id, payloadObject.app_id, payloadObject.counter);
+            log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message retry", payload.dev_id, payload.app_id, payload.counter);
             return;
          }
+
+         log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message device processing start", payload.dev_id, payload.app_id, payload.counter);
 
          // Check that KeyVault URI is configured in environment variables. Not a lot we can do if it isn't....
          if (Configuration == null)
@@ -69,7 +65,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
             string keyVaultUri = Environment.GetEnvironmentVariable("KeyVaultURI");
             if (string.IsNullOrEmpty(keyVaultUri))
             {
-               Log.LogError("KeyVaultURI environment variable not set");
+               log.LogError("KeyVaultURI environment variable not set");
                throw new ApplicationException("KeyVaultURI environment variable not set");
             }
 
@@ -83,86 +79,152 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
             }
             catch (Exception ex)
             {
-               Log.LogError(ex, $"Configuration loading failed");
+               log.LogError(ex, $"Configuration loading failed");
                throw;
             }
          }
 
-         Log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message device processing start", payloadObject.dev_id, payloadObject.app_id, payloadObject.counter);
-
-         deviceClient = await DeviceClientCreate(
-            Configuration.GetSection("DPSGlobaDeviceEndpoint").Value,
-            Configuration.GetSection("DPSIDScope").Value,
-            payloadObject.app_id,
-            payloadObject.dev_id);
-
-         await DeviceTelemetrySend(deviceClient, payloadObject);
-
-         Log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message device processing completed", payloadObject.dev_id, payloadObject.app_id, payloadObject.counter);
-      }
-
-      static async Task<DeviceClient> DeviceClientCreate(
-         string globalDeviceEndpoint,
-         string idScope,
-         string applicationId,
-         string deviceId)
-      {
-         DeviceClient deviceClient = null;
+         string dpsGlobaDeviceEndpoint = DpsGlobaDeviceEndpointResolve(Configuration);
+         string dpsIdScope = DpsIdScopeResolve(Configuration, payload.app_id, payload.port);
+         string dpsEnrollmentGroupSymmetricKey = DpsEnrollmentGroupSymmetricKeyResolve(Configuration, payload.app_id, payload.port);
+         string registrationId = RegistrationIdResolve(Configuration, payload.app_id, payload.port, payload.dev_id);
+         int deviceProvisioningPollingDelay = DpsDeviceProvisioningPollingDelay(Configuration);
 
          // See if the device has already been provisioned or is being provisioned on another thread.
-         if (DeviceClients.TryAdd(deviceId, deviceClient))
+         if (DeviceClients.TryAdd(registrationId, deviceClient))
          {
-            Log.LogInformation("DevID:{deviceId} AppID:{applicationId} Device provisioning start", deviceId, applicationId);
+            log.LogInformation("RegID:{registrationId} Device provisioning start", payload.dev_id);
 
-            // Check to see if there is application specific configuration, otherwise run with default
-            string enrollmentGroupSymmetricKey = Configuration.GetSection($"DPSEnrollmentGroupSymmetricKey-{applicationId}").Value;
-            if (enrollmentGroupSymmetricKey == null)
+            try
             {
-               enrollmentGroupSymmetricKey = Configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value;
+               // Do DPS magic first time device seen
+               deviceClient = await DeviceRegistration(dpsGlobaDeviceEndpoint, dpsIdScope, dpsEnrollmentGroupSymmetricKey, registrationId);
+            }
+            catch (Exception ex)
+            {
+               if (!DeviceClients.TryRemove(registrationId, out deviceClient))
+               {
+                  log.LogWarning("RegID:{registrationID} Device Registration TryRemove failed", registrationId);
+               }
+
+               log.LogError(ex, "RegID:{registrationID} Device Registration failed", registrationId);
+               throw;
             }
 
-            // Do DPS magic first time device seen
-            await DeviceRegistration(globalDeviceEndpoint, idScope, enrollmentGroupSymmetricKey, deviceId, applicationId);
+            if (!DeviceClients.TryUpdate(registrationId, deviceClient, null))
+            {
+               log.LogWarning("DevID:{registrationID} Device Registration TryUpdate failed", registrationId);
+            }
+            //Log.LogInformation("DevID:{registrationId} Assigned IoTHub:{assignedHub}", registrationId, deviceClient);
+            log.LogInformation("DevID:{registrationId} Assigned IoTHub", registrationId );
          }
 
          // Wait for the Device Provisioning Service to complete on this or other thread
-         Log.LogInformation("DevID:{deviceId} AppID:{applicationId} Device provisioning polling start", deviceId, applicationId);
+         log.LogInformation("RegID:{registrationId} Device provisioning polling start", registrationId);
 
-         if (!DeviceClients.TryGetValue(deviceId, out deviceClient))
-         {
-            Log.LogWarning("DevID:{deviceId} AppID:{applicationId} Device provisioning polling TryGet before while failed", deviceId, applicationId);
-
-            throw new ApplicationException($"DevID:{deviceId} AppID:{applicationId} Device provisioning polling TryGet before while failed");
-         }
-
-         int deviceProvisioningPollingDelay = int.Parse(Configuration.GetSection("DeviceProvisioningPollingDelay").Value);
-
-         // Wait for the deviceClient to be configured if process kicked off on another thread, not timeout as will get 
-         // taken care of by function timeout...
+         // Wait for the deviceClient to be configured if process kicked off on another thread, not timeout as will get taken care of by function timeout...
          do
          {
-            if (!DeviceClients.TryGetValue(deviceId, out deviceClient))
+            if (!DeviceClients.TryGetValue(registrationId, out deviceClient))
             {
-               Log.LogWarning("DevID:{deviceId} AppID:{applicationId} Device provisioning polling TryGet do while loop failed", deviceId, applicationId);
+               log.LogWarning("RegID:{registrationId} Device provisioning polling TryGet do while loop failed", registrationId);
 
-               throw new ApplicationException($"DevID:{deviceId} AppID:{applicationId} Device provisioning polling TryGet do while loop failed");
+               throw new ApplicationException($"RegID:{registrationId} Device provisioning polling TryGet do while loop failed");
             }
 
             if (deviceClient == null)
             {
-               Log.LogInformation($"DevID:{deviceId} AppID:{applicationId} provisioning polling delay:{deviceProvisioningPollingDelay}mSec", deviceId, applicationId, deviceProvisioningPollingDelay);
+               log.LogInformation($"RegID:{registrationId} Device provisioning polling delay:{deviceProvisioningPollingDelay}mSec", registrationId, deviceProvisioningPollingDelay);
                await Task.Delay(deviceProvisioningPollingDelay);
             }
          }
          while (deviceClient == null);
 
+         await DeviceTelemetrySend(log, deviceClient, payload);
+
+         log.LogInformation("DevID:{deviceId} AppID:{app_id} Counter:{counter} Uplink message device processing completed", payload.dev_id, payload.app_id, payload.counter);
+      }
+
+      static string DpsGlobaDeviceEndpointResolve(IConfiguration configuration)
+      {
+         string dpsGlobaDeviceEndpoint = configuration.GetSection("DPSGlobaDeviceEndpoint").Value;
+         if (string.IsNullOrEmpty(dpsGlobaDeviceEndpoint))
+         {
+            dpsGlobaDeviceEndpoint = DpsGlobaDeviceEndpointDefault;
+         }
+
+         return dpsGlobaDeviceEndpoint;
+      }
+
+      static string DpsIdScopeResolve(IConfiguration configuration, string applicationId, int port)
+      {
+         // Check to see if there is application specific configuration, otherwise run with default
+         string idScope = configuration.GetSection($"DPSIDScope-{applicationId}").Value;
+         if (idScope == null)
+         {
+            idScope = configuration.GetSection("DPSIDScopeDefault").Value;
+         }
+
+         return idScope;
+      }
+
+      static string DpsEnrollmentGroupSymmetricKeyResolve(IConfiguration configuration, string applicationId, int port)
+      {
+         // Check to see if there is application specific configuration, otherwise run with default
+         string enrollmentGroupSymmetricKey = configuration.GetSection($"DPSEnrollmentGroupSymmetricKey-{applicationId}").Value;
+         if (enrollmentGroupSymmetricKey == null)
+         {
+            enrollmentGroupSymmetricKey = configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value;
+         }
+
+         return enrollmentGroupSymmetricKey;
+      }
+
+      static int DpsDeviceProvisioningPollingDelay(IConfiguration configuration)
+      {
+         int deviceProvisioningPollingDelay;
+
+         deviceProvisioningPollingDelay = int.Parse(configuration.GetSection("DeviceProvisioningPollingDelay").Value);
+
+         return deviceProvisioningPollingDelay;
+      }
+
+      static string RegistrationIdResolve(IConfiguration configuration, string applicationId, int port, string deviceId)
+      {
+         return deviceId;
+      }
+
+      static async Task<DeviceClient> DeviceRegistration(string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string registrationId)
+      {
+         DeviceClient deviceClient;
+
+            string deviceKey = ComputeDerivedSymmetricKey(Convert.FromBase64String(enrollmentGroupSymmetricKey), registrationId);
+
+            using (var securityProvider = new SecurityProviderSymmetricKey(registrationId, deviceKey, null))
+            {
+               using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
+               {
+                  ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, IdScope, securityProvider, transport);
+
+                  DeviceRegistrationResult result = await provClient.RegisterAsync();
+                  if (result.Status != ProvisioningRegistrationStatusType.Assigned)
+                  {
+                     throw new ApplicationException($"DevID:{registrationId} Status:{result.Status} RegisterAsync failed");
+                  }
+
+                  IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
+
+                  deviceClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp);
+               }
+            }
+        
          return deviceClient;
       }
 
-      static async Task DeviceTelemetrySend(DeviceClient deviceClient, PayloadUplink payloadObject)
+      static async Task DeviceTelemetrySend(ILogger log, DeviceClient deviceClient, PayloadUplink payloadObject)
       {
          // Assemble the JSON payload to send to Azure IoT Hub/Central.
-         Log.LogInformation("DevID:{dev_id} AppID:{app_id} Payload assembly start", payloadObject.dev_id, payloadObject.app_id);
+         log.LogInformation("DevID:{dev_id} AppID:{app_id} Payload assembly start", payloadObject.dev_id, payloadObject.app_id);
 
          JObject telemetryEvent = new JObject();
          try
@@ -188,12 +250,12 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          }
          catch (Exception ex)
          {
-            Log.LogError(ex, "DevID:{dev_id} AppID:{app_id} Payload processing or Telemetry event assembly failed", payloadObject.dev_id, payloadObject.app_id);
+            log.LogError(ex, "DevID:{dev_id} AppID:{app_id} Payload processing or Telemetry event assembly failed", payloadObject.dev_id, payloadObject.app_id);
             throw;
          }
 
          // Send the message to Azure IoT Hub/Azure IoT Central
-         Log.LogInformation("DevID:{dev_id} AppID:{app_id} Payload SendEventAsync start", payloadObject.dev_id, payloadObject.app_id);
+         log.LogInformation("DevID:{dev_id} AppID:{app_id} Payload SendEventAsync start", payloadObject.dev_id, payloadObject.app_id);
          try
          {
             using (Message ioTHubmessage = new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(telemetryEvent))))
@@ -208,54 +270,10 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          {
             if (!DeviceClients.TryRemove(payloadObject.dev_id, out deviceClient))
             {
-               Log.LogWarning("DevID:{dev_id} AppID:{app_id} Payload SendEventAsync TryRemove failed", payloadObject.dev_id, payloadObject.app_id);
+               log.LogWarning("DevID:{dev_id} AppID:{app_id} Payload SendEventAsync TryRemove failed", payloadObject.dev_id, payloadObject.app_id);
             }
 
-            Log.LogError(ex, "DevID:{dev_id} AppID:{app_id} SendEventAsync failed", payloadObject.dev_id, payloadObject.app_id);
-            throw;
-         }
-      }
-
-      static async Task DeviceRegistration(string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string registrationId, string applicationId)
-      {
-         DeviceClient deviceClient;
-
-         try
-         {
-            string deviceKey = ComputeDerivedSymmetricKey(Convert.FromBase64String(enrollmentGroupSymmetricKey), registrationId);
-
-            using (var securityProvider = new SecurityProviderSymmetricKey(registrationId, deviceKey, null))
-            {
-               using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
-               {
-                  ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, IdScope, securityProvider, transport);
-
-                  DeviceRegistrationResult result = await provClient.RegisterAsync();
-                  if (result.Status != ProvisioningRegistrationStatusType.Assigned)
-                  {
-                     throw new ApplicationException($"DevID:{registrationId} AppID:{applicationId} Status:{result.Status} RegisterAsync failed");
-                  }
-                  Log.LogInformation("DevID:{registrationId} AppID:{applicationId} Assigned IoTHub:{assignedHub}", registrationId, applicationId, result.AssignedHub);
-
-                  IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
-
-                  deviceClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp);
-
-                  if (!DeviceClients.TryUpdate(registrationId, deviceClient, null))
-                  {
-                     Log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device Registration TryUpdate failed", registrationId, applicationId);
-                  }
-               }
-            }
-         }
-         catch (Exception ex)
-         {
-            if (!DeviceClients.TryRemove(registrationId, out deviceClient))
-            {
-               Log.LogWarning("DevID:{registrationID} AppID:{applicationId} Device Registration TryRemove failed", registrationId, applicationId);
-            }
-
-            Log.LogError(ex, "DevID:{registrationID} AppID:{applicationId} Device Registration failed", registrationId, applicationId);
+            log.LogError(ex, "DevID:{dev_id} AppID:{app_id} SendEventAsync failed", payloadObject.dev_id, payloadObject.app_id);
             throw;
          }
       }
@@ -312,6 +330,14 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          {
             return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(registrationId)));
          }
+      }
+
+      [FunctionName("DownlinkMessageProcessor")]
+      public static async Task DownlinkRun(
+      [QueueTrigger("%DownlinkQueueName%", Connection = "AzureStorageConnectionString")]
+         PayloadDownlink payload,
+         ILogger log)
+      {
       }
    }
 }

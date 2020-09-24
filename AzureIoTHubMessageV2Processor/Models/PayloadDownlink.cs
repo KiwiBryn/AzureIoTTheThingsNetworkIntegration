@@ -16,7 +16,7 @@
 //---------------------------------------------------------------------------------
 namespace devMobile.TheThingsNetwork.MessageProcessor.Models
 {
-   class PayloadDownlink
+   public class PayloadDownlink
    {
    }
 }
