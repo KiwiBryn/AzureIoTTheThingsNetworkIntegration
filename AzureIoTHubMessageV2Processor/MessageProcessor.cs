@@ -36,7 +36,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
       
    using devMobile.TheThingsNetwork.MessageProcessor.Models;
 
-   public static class UplinkMessageProcessor
+   public static class MessageProcessor
    {
       const string DpsGlobaDeviceEndpointDefault = "global.azure-devices-provisioning.net";
       static readonly ConcurrentDictionary<string, DeviceClient> DeviceClients = new ConcurrentDictionary<string, DeviceClient>();
