@@ -53,11 +53,11 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          // Quick n dirty hack to see what difference (if any) not processing retries makes
          if (payload.is_retry)
          {
-            log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message retry", payload.dev_id, payload.app_id, payload.counter);
+            log.LogInformation("DevID:{dev_id} Counter:{counter} AppID:{app_id} Uplink message retry", payload.dev_id, payload.counter, payload.app_id);
             return;
          }
 
-         log.LogInformation("DevID:{dev_id} AppID:{app_id} Counter:{counter} Uplink message device processing start", payload.dev_id, payload.app_id, payload.counter);
+         log.LogInformation("DevID:{dev_id} Counter:{counter} AppID:{app_id} Uplink message device processing start", payload.dev_id, payload.counter, payload.app_id);
 
          // Check that KeyVault URI is configured in environment variables. Not a lot we can do if it isn't....
          if (Configuration == null)
@@ -84,21 +84,21 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
             }
          }
 
-         string dpsGlobaDeviceEndpoint = DpsGlobaDeviceEndpointResolve(Configuration);
-         string dpsIdScope = DpsIdScopeResolve(Configuration, payload.app_id, payload.port);
-         string dpsEnrollmentGroupSymmetricKey = DpsEnrollmentGroupSymmetricKeyResolve(Configuration, payload.app_id, payload.port);
          string registrationId = RegistrationIdResolve(Configuration, payload.app_id, payload.port, payload.dev_id);
-         int deviceProvisioningPollingDelay = DpsDeviceProvisioningPollingDelay(Configuration);
 
          // See if the device has already been provisioned or is being provisioned on another thread.
          if (DeviceClients.TryAdd(registrationId, deviceClient))
          {
-            log.LogInformation("RegID:{registrationId} Device provisioning start", payload.dev_id);
+            log.LogInformation("RegID:{registrationId} Device provisioning start", registrationId);
 
             try
             {
                // Do DPS magic first time device seen
-               deviceClient = await DeviceRegistration(dpsGlobaDeviceEndpoint, dpsIdScope, dpsEnrollmentGroupSymmetricKey, registrationId);
+               deviceClient = await DeviceRegistration(
+                  DpsGlobaDeviceEndpointResolve(Configuration),
+                  DpsIdScopeResolve(Configuration, payload.app_id, payload.port),
+                  DpsEnrollmentGroupSymmetricKeyResolve(Configuration, payload.app_id, payload.port), 
+                  payload.dev_id);
             }
             catch (Exception ex)
             {
@@ -115,14 +115,16 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
             {
                log.LogWarning("DevID:{registrationID} Device Registration TryUpdate failed", registrationId);
             }
-            //Log.LogInformation("DevID:{registrationId} Assigned IoTHub:{assignedHub}", registrationId, deviceClient);
-            log.LogInformation("DevID:{registrationId} Assigned IoTHub", registrationId );
+
+            log.LogInformation("DevID:{registrationId} Assigned to IoTHub", registrationId );
          }
 
          // Wait for the Device Provisioning Service to complete on this or other thread
          log.LogInformation("RegID:{registrationId} Device provisioning polling start", registrationId);
 
-         // Wait for the deviceClient to be configured if process kicked off on another thread, not timeout as will get taken care of by function timeout...
+         int deviceProvisioningPollingDelay = DpsDeviceProvisioningPollingDelay(Configuration);
+
+         // Wait for the deviceClient to be configured if process kicked off on another thread, no timeout as will get taken care of by function timeout...
          do
          {
             if (!DeviceClients.TryGetValue(registrationId, out deviceClient))
@@ -140,6 +142,8 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          }
          while (deviceClient == null);
 
+         log.LogInformation("RegID:{registrationId} Device provisioning polling completed", registrationId);
+
          await DeviceTelemetrySend(log, deviceClient, payload);
 
          log.LogInformation("DevID:{deviceId} AppID:{app_id} Counter:{counter} Uplink message device processing completed", payload.dev_id, payload.app_id, payload.counter);
@@ -147,13 +151,18 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
 
       static string DpsGlobaDeviceEndpointResolve(IConfiguration configuration)
       {
-         string dpsGlobaDeviceEndpoint = configuration.GetSection("DPSGlobaDeviceEndpoint").Value;
-         if (string.IsNullOrEmpty(dpsGlobaDeviceEndpoint))
+         string globaDeviceEndpoint = configuration.GetSection("DPSGlobaDeviceEndpoint").Value;
+         if (string.IsNullOrEmpty(globaDeviceEndpoint))
          {
-            dpsGlobaDeviceEndpoint = DpsGlobaDeviceEndpointDefault;
+            globaDeviceEndpoint = DpsGlobaDeviceEndpointDefault;
          }
 
-         return dpsGlobaDeviceEndpoint;
+         if (string.IsNullOrWhiteSpace(globaDeviceEndpoint))
+         {
+            throw new ApplicationException($"DPSGlobaDeviceEndpoint configuration invalid");
+         }
+
+         return globaDeviceEndpoint;
       }
 
       static string DpsIdScopeResolve(IConfiguration configuration, string applicationId, int port)
@@ -163,6 +172,11 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          if (idScope == null)
          {
             idScope = configuration.GetSection("DPSIDScopeDefault").Value;
+         }
+
+         if (string.IsNullOrWhiteSpace(idScope))
+         {
+            throw new ApplicationException($"DPSIDScope configuration invalid");
          }
 
          return idScope;
@@ -177,6 +191,11 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
             enrollmentGroupSymmetricKey = configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value;
          }
 
+         if (string.IsNullOrWhiteSpace(enrollmentGroupSymmetricKey))
+         {
+            throw new ApplicationException($"DPSEnrollmentGroupSymmetricKey configuration invalid");
+         }
+
          return enrollmentGroupSymmetricKey;
       }
 
@@ -184,7 +203,10 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
       {
          int deviceProvisioningPollingDelay;
 
-         deviceProvisioningPollingDelay = int.Parse(configuration.GetSection("DeviceProvisioningPollingDelay").Value);
+         if (!int.TryParse(configuration.GetSection("DeviceProvisioningPollingDelay").Value, out deviceProvisioningPollingDelay))
+         {
+            throw new ApplicationException($"DeviceProvisioningPollingDelay configuration invalid");
+         }
 
          return deviceProvisioningPollingDelay;
       }
@@ -194,29 +216,34 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          return deviceId;
       }
 
-      static async Task<DeviceClient> DeviceRegistration(string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string registrationId)
+      static async Task<DeviceClient> DeviceRegistration(string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string deviceId)
       {
          DeviceClient deviceClient;
+         string deviceKey;
 
-            string deviceKey = ComputeDerivedSymmetricKey(Convert.FromBase64String(enrollmentGroupSymmetricKey), registrationId);
+         // Compute the derived symmetric key for the DeviceId not the registrationId
+         using (var hmac = new HMACSHA256(Convert.FromBase64String(enrollmentGroupSymmetricKey)))
+         {
+            deviceKey = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(deviceId)));
+         }
 
-            using (var securityProvider = new SecurityProviderSymmetricKey(registrationId, deviceKey, null))
+         using (var securityProvider = new SecurityProviderSymmetricKey(deviceId, deviceKey, null))
+         {
+            using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
             {
-               using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
+               ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, IdScope, securityProvider, transport);
+
+               DeviceRegistrationResult result = await provClient.RegisterAsync();
+               if (result.Status != ProvisioningRegistrationStatusType.Assigned)
                {
-                  ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, IdScope, securityProvider, transport);
-
-                  DeviceRegistrationResult result = await provClient.RegisterAsync();
-                  if (result.Status != ProvisioningRegistrationStatusType.Assigned)
-                  {
-                     throw new ApplicationException($"DevID:{registrationId} Status:{result.Status} RegisterAsync failed");
-                  }
-
-                  IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
-
-                  deviceClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp);
+                  throw new ApplicationException($"DevID:{deviceId} Status:{result.Status} RegisterAsync failed");
                }
+
+               IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
+
+               deviceClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp);
             }
+         }
         
          return deviceClient;
       }
@@ -321,14 +348,6 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
             {
                EnumerateChildren(jobject, token2);
             }
-         }
-      }
-
-      public static string ComputeDerivedSymmetricKey(byte[] masterKey, string registrationId)
-      {
-         using (var hmac = new HMACSHA256(masterKey))
-         {
-            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(registrationId)));
          }
       }
 
