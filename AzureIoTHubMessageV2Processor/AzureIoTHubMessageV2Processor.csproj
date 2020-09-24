@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <RootNamespace>devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor</RootNamespace>
+    <UserSecretsId>3c2ec010-9282-4759-ac1b-63e070cb28f6</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.30.0" />
