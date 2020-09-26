@@ -354,3 +354,4 @@ healthchecksdb
 /AzureKeyVaultClient/Properties/launchSettings.json
 /AzureIoTHubUplinkMessageV2Processor/Properties/launchSettings.json
 /AzureIoTHubMessageV2Processor/Properties/launchSettings.json
+/AzureIoTHubMessageV2ProcessorClient/Properties/launchSettings.json
