@@ -1,28 +1,28 @@
 {
   "dependencies": {
-    "storage1": {
-      "type": "storage",
-      "connectionId": "AzureWebJobsStorage"
-    },
     "appInsights1": {
       "type": "appInsights",
       "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY"
     },
-    "storage2": {
-      "type": "storage",
-      "connectionId": "AzureWebJobsAzureStorageConnectionString"
+    "secrets1": {
+      "type": "secrets",
+      "connectionId": "KeyVaultUri"
     },
     "storage3": {
       "type": "storage",
       "connectionId": "AzureStorageConnectionString"
     },
+    "storage2": {
+      "type": "storage",
+      "connectionId": "AzureWebJobsAzureStorageConnectionString"
+    },
     "storage4": {
       "type": "storage",
       "connectionId": "AzureWebJobsDashboardConnectionString"
     },
-    "secrets1": {
-      "type": "secrets",
-      "connectionId": "KeyVaultUri"
+    "storage1": {
+      "type": "storage",
+      "connectionId": "AzureWebJobsStorage"
     }
   }
 }

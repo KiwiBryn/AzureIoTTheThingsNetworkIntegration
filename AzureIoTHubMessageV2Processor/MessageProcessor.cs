@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 //---------------------------------------------------------------------------------
-namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
+namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 {
    using System;
    using System.Collections.Concurrent;
@@ -28,7 +28,6 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
    using Microsoft.Azure.Devices.Provisioning.Client.Transport;
    using Microsoft.Azure.Devices.Shared;
    using Microsoft.Azure.WebJobs;
-   using Microsoft.Extensions.Configuration;
    using Microsoft.Extensions.Logging;
 
    using Newtonsoft.Json;
@@ -38,9 +37,8 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
 
    public static class MessageProcessor
    {
-      const string DpsGlobaDeviceEndpointDefault = "global.azure-devices-provisioning.net";
       static readonly ConcurrentDictionary<string, DeviceClient> DeviceClients = new ConcurrentDictionary<string, DeviceClient>();
-      static IConfiguration Configuration = null;
+      static readonly ApplicationConfiguration ApplicationConfiguration = new ApplicationConfiguration();
 
       [FunctionName("UplinkMessageProcessor")]
       public static async Task UplinkRun(
@@ -59,32 +57,9 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
 
          log.LogInformation("DevID:{dev_id} Counter:{counter} AppID:{app_id} Uplink message device processing start", payload.dev_id, payload.counter, payload.app_id);
 
-         // Check that KeyVault URI is configured in environment variables. Not a lot we can do if it isn't....
-         if (Configuration == null)
-         {
-            string keyVaultUri = Environment.GetEnvironmentVariable("KeyVaultURI");
-            if (string.IsNullOrEmpty(keyVaultUri))
-            {
-               log.LogError("KeyVaultURI environment variable not set");
-               throw new ApplicationException("KeyVaultURI environment variable not set");
-            }
+         ApplicationConfiguration.Initialise();
 
-            // Load configuration from KeyVault 
-            try
-            {
-               Configuration = new ConfigurationBuilder()
-                  .AddEnvironmentVariables()
-                  .AddAzureKeyVault(keyVaultUri)
-                  .Build();
-            }
-            catch (Exception ex)
-            {
-               log.LogError(ex, $"Configuration loading failed");
-               throw;
-            }
-         }
-
-         string registrationId = RegistrationIdResolve(Configuration, payload.app_id, payload.port, payload.dev_id);
+         string registrationId = ApplicationConfiguration.RegistrationIdResolve(payload.app_id, payload.port, payload.dev_id);
 
          // See if the device has already been provisioned or is being provisioned on another thread.
          if (DeviceClients.TryAdd(registrationId, deviceClient))
@@ -95,9 +70,9 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
             {
                // Do DPS magic first time device seen
                deviceClient = await DeviceRegistration(
-                  DpsGlobaDeviceEndpointResolve(Configuration),
-                  DpsIdScopeResolve(Configuration, payload.app_id, payload.port),
-                  DpsEnrollmentGroupSymmetricKeyResolve(Configuration, payload.app_id, payload.port), 
+                  ApplicationConfiguration.DpsGlobaDeviceEndpointResolve(),
+                  ApplicationConfiguration.DpsIdScopeResolve(payload.app_id, payload.port),
+                  ApplicationConfiguration.DpsEnrollmentGroupSymmetricKeyResolve(payload.app_id, payload.port), 
                   payload.dev_id);
             }
             catch (Exception ex)
@@ -122,7 +97,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          // Wait for the Device Provisioning Service to complete on this or other thread
          log.LogInformation("RegID:{registrationId} Device provisioning polling start", payload.dev_id);
 
-         int deviceProvisioningPollingDelay = DpsDeviceProvisioningPollingDelay(Configuration);
+         int deviceProvisioningPollingDelay = ApplicationConfiguration.DpsDeviceProvisioningPollingDelay();
 
          // Wait for the deviceClient to be configured if process kicked off on another thread, no timeout as will get taken care of by function timeout...
          do
@@ -160,73 +135,6 @@ namespace devMobile.TheThingsNetwork.AzureIoTMessageProcessor
          }
 
          log.LogInformation("DevID:{deviceId} Counter:{counter} Uplink message device processing completed", payload.dev_id, payload.counter);
-      }
-
-      static string DpsGlobaDeviceEndpointResolve(IConfiguration configuration)
-      {
-         string globaDeviceEndpoint = configuration.GetSection("DPSGlobaDeviceEndpoint").Value;
-         if (string.IsNullOrEmpty(globaDeviceEndpoint))
-         {
-            globaDeviceEndpoint = DpsGlobaDeviceEndpointDefault;
-         }
-
-         if (string.IsNullOrWhiteSpace(globaDeviceEndpoint))
-         {
-            throw new ApplicationException($"DPSGlobaDeviceEndpoint configuration invalid");
-         }
-
-         return globaDeviceEndpoint;
-      }
-
-      static string DpsIdScopeResolve(IConfiguration configuration, string applicationId, int port)
-      {
-         // Check to see if there is application specific configuration, otherwise run with default
-         string idScope = configuration.GetSection($"DPSIDScope-{applicationId}").Value;
-         if (idScope == null)
-         {
-            idScope = configuration.GetSection("DPSIDScopeDefault").Value;
-         }
-
-         if (string.IsNullOrWhiteSpace(idScope))
-         {
-            throw new ApplicationException($"DPSIDScope configuration invalid");
-         }
-
-         return idScope;
-      }
-
-      static string DpsEnrollmentGroupSymmetricKeyResolve(IConfiguration configuration, string applicationId, int port)
-      {
-         // Check to see if there is application specific configuration, otherwise run with default
-         string enrollmentGroupSymmetricKey = configuration.GetSection($"DPSEnrollmentGroupSymmetricKey-{applicationId}").Value;
-         if (enrollmentGroupSymmetricKey == null)
-         {
-            enrollmentGroupSymmetricKey = configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value;
-         }
-
-         if (string.IsNullOrWhiteSpace(enrollmentGroupSymmetricKey))
-         {
-            throw new ApplicationException($"DPSEnrollmentGroupSymmetricKey configuration invalid");
-         }
-
-         return enrollmentGroupSymmetricKey;
-      }
-
-      static int DpsDeviceProvisioningPollingDelay(IConfiguration configuration)
-      {
-         int deviceProvisioningPollingDelay;
-
-         if (!int.TryParse(configuration.GetSection("DeviceProvisioningPollingDelay").Value, out deviceProvisioningPollingDelay))
-         {
-            throw new ApplicationException($"DeviceProvisioningPollingDelay configuration invalid");
-         }
-
-         return deviceProvisioningPollingDelay;
-      }
-
-      static string RegistrationIdResolve(IConfiguration configuration, string applicationId, int port, string deviceId)
-      {
-         return deviceId;
       }
 
       static async Task<DeviceClient> DeviceRegistration(string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string deviceId)

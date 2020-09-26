@@ -1,21 +1,15 @@
 {
   "dependencies": {
+    "storage1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
+      "type": "storage.azure",
+      "connectionId": "AzureWebJobsStorage",
+      "secretStore": null
+    },
     "appInsights1": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/integrationmonitoring",
       "type": "appInsights.azure",
       "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
-      "secretStore": null
-    },
-    "secrets1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/TTNConfiguration",
-      "type": "secrets.keyVault",
-      "connectionId": "KeyVaultUri",
-      "secretStore": null
-    },
-    "storage3": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
-      "type": "storage.azure",
-      "connectionId": "AzureStorageConnectionString",
       "secretStore": null
     },
     "storage2": {
@@ -24,16 +18,22 @@
       "connectionId": "AzureWebJobsAzureStorageConnectionString",
       "secretStore": null
     },
+    "storage3": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
+      "type": "storage.azure",
+      "connectionId": "AzureStorageConnectionString",
+      "secretStore": null
+    },
     "storage4": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
       "type": "storage.azure",
       "connectionId": "AzureWebJobsDashboardConnectionString",
       "secretStore": null
     },
-    "storage1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnintegration",
-      "type": "storage.azure",
-      "connectionId": "AzureWebJobsStorage",
+    "secrets1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/TTNConfiguration",
+      "type": "secrets.keyVault",
+      "connectionId": "KeyVaultUri",
       "secretStore": null
     }
   }
