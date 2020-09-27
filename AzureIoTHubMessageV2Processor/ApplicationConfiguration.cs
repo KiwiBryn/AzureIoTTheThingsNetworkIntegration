@@ -17,6 +17,7 @@
 namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 {
    using System;
+
    using Microsoft.Extensions.Configuration;
 
    public class ApplicationConfiguration
@@ -31,7 +32,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
          if (Configuration == null)
          {
             string keyVaultUri = Environment.GetEnvironmentVariable("KeyVaultURI");
-            if (string.IsNullOrEmpty(keyVaultUri))
+            if (string.IsNullOrWhiteSpace(keyVaultUri))
             {
                throw new ApplicationException("KeyVaultURI environment variable not set");
             }
@@ -47,14 +48,9 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
       public string DpsGlobaDeviceEndpointResolve()
       {
          string globaDeviceEndpoint = Configuration.GetSection("DPSGlobaDeviceEndpoint").Value;
-         if (string.IsNullOrEmpty(globaDeviceEndpoint))
-         {
-            globaDeviceEndpoint = DpsGlobaDeviceEndpointDefault;
-         }
-
          if (string.IsNullOrWhiteSpace(globaDeviceEndpoint))
          {
-            throw new ApplicationException($"DPSGlobaDeviceEndpoint configuration invalid");
+            globaDeviceEndpoint = DpsGlobaDeviceEndpointDefault;
          }
 
          return globaDeviceEndpoint;
@@ -62,12 +58,22 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
       public string DpsIdScopeResolve(string applicationId, int port)
       {
-         // Check to see if there is application specific configuration, otherwise run with default
-         string idScope = Configuration.GetSection($"DPSIDScope-{applicationId}").Value;
-         if (idScope == null)
+         // Check to see if there is application + port specific configuration
+         string idScope = Configuration.GetSection($"DPSIDScope-{applicationId}-{port}").Value;
+         if (!string.IsNullOrWhiteSpace(idScope))
          {
-            idScope = Configuration.GetSection("DPSIDScopeDefault").Value;
+            return idScope;
          }
+
+         // Check to see if there is application specific configuration, otherwise run with default
+         idScope = Configuration.GetSection($"DPSIDScope-{applicationId}").Value;
+         if (!string.IsNullOrWhiteSpace(idScope))
+         {
+            return idScope;
+         }
+
+         // get the default as not a specialised configuration
+         idScope = Configuration.GetSection("DPSIDScopeDefault").Value;
 
          if (string.IsNullOrWhiteSpace(idScope))
          {
@@ -79,12 +85,22 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
       public string DpsEnrollmentGroupSymmetricKeyResolve(string applicationId, int port)
       {
-         // Check to see if there is application specific configuration, otherwise run with default
-         string enrollmentGroupSymmetricKey = Configuration.GetSection($"DPSEnrollmentGroupSymmetricKey-{applicationId}").Value;
-         if (enrollmentGroupSymmetricKey == null)
+         // Check to see if there is application + port specific configuration
+         string enrollmentGroupSymmetricKey = Configuration.GetSection($"DPSEnrollmentGroupSymmetricKey-{applicationId}-{port}").Value;
+         if (!string.IsNullOrWhiteSpace(enrollmentGroupSymmetricKey))
          {
-            enrollmentGroupSymmetricKey = Configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value;
+            return enrollmentGroupSymmetricKey;
          }
+
+         // Check to see if there is application specific configuration, otherwise run with default
+         enrollmentGroupSymmetricKey = Configuration.GetSection($"DPSEnrollmentGroupSymmetricKey-{applicationId}").Value;
+         if (!string.IsNullOrWhiteSpace(enrollmentGroupSymmetricKey))
+         {
+            return enrollmentGroupSymmetricKey;
+         }
+
+         // get the default as not a specialised configuration
+         enrollmentGroupSymmetricKey = Configuration.GetSection("DPSEnrollmentGroupSymmetricKeyDefault").Value;
 
          if (string.IsNullOrWhiteSpace(enrollmentGroupSymmetricKey))
          {
@@ -92,6 +108,19 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
          }
 
          return enrollmentGroupSymmetricKey;
+      }
+
+      public string RegistrationIdResolve(string applicationId, int port, string deviceId)
+      {
+         // Use DPSEnrollmentGroupSymmetricKey to see if cache key needs port added to make unique for when port configuration is 
+         // specified.Don't need to include application in cache Key as TTN configuration stops duplicate deviceIDs across applications.
+         string enrollmentGroupSymmetricKey = Configuration.GetSection($"DPSEnrollmentGroupSymmetricKey-{applicationId}-{port}").Value;
+         if (!string.IsNullOrWhiteSpace(enrollmentGroupSymmetricKey))
+         {
+            return $"{deviceId}-{port}";
+         }
+
+         return deviceId;
       }
 
       public int DpsDeviceProvisioningPollingDelay()
@@ -104,11 +133,6 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
          }
 
          return deviceProvisioningPollingDelay;
-      }
-
-      public  string RegistrationIdResolve(string applicationId, int port, string deviceId)
-      {
-         return deviceId;
       }
    }
 }
