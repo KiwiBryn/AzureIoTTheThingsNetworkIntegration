@@ -63,6 +63,8 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageV2ProcessorClient
 
                   string payload = File.ReadAllText(fileName);
 
+                  //For exercising the cache more to see what memory consumption is like
+                  //payload = payload.Replace("@dev_id@", 1000 + deviceCounter.ToString("000"));
                   payload = payload.Replace("@dev_id@", deviceCounter.ToString("000"));
                   payload = payload.Replace("@time@", DateTime.UtcNow.ToString("s"));
 
