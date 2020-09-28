@@ -355,4 +355,3 @@ healthchecksdb
 /AzureIoTHubUplinkMessageV2Processor/Properties/launchSettings.json
 /AzureIoTHubMessageV2Processor/Properties/launchSettings.json
 /AzureIoTHubMessageV2ProcessorClient/Properties/launchSettings.json
-/AzureIoTHubMessageV3Processor/Properties/launchSettings.json
