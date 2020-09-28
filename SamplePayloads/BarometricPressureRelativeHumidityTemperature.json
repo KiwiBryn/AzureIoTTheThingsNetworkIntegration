@@ -4,6 +4,7 @@
    "hardware_serial": "1234567890123456",
    "port": 10,
    "counter": 1,
+   "is_retry": false,
    "payload_raw": "AHMAAABzJ5QAaGQBaHgAZ/VWAWcAAAJnA\u002Bg=",
    "payload_fields": {
       "barometric_pressure_0": 1013.2,

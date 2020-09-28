@@ -4,6 +4,7 @@
    "hardware_serial": "1234567890123456",
    "port": 10,
    "counter": 2,
+   "is_retry": false,
    "payload_raw": "AAIAAQADADgAAAABAAE=",
    "payload_fields": {
       "analog_in_0": 0.02,

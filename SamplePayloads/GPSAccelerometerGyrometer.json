@@ -4,6 +4,7 @@
    "hardware_serial": "1234567890123456",
    "port": 10,
    "counter": 1,
+   "is_retry": false,
    "payload_raw": "AYj5W5MaV6MAAmsAcQAAAAAD6AGGAAAAAAAA",
    "payload_fields": {
       "accelerometer_0": {
