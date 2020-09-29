@@ -12,17 +12,13 @@
       "type": "storage",
       "connectionId": "AzureStorageConnectionString"
     },
-    "storage2": {
-      "type": "storage",
-      "connectionId": "AzureWebJobsAzureStorageConnectionString"
-    },
-    "storage4": {
-      "type": "storage",
-      "connectionId": "AzureWebJobsDashboardConnectionString"
-    },
     "storage1": {
       "type": "storage",
       "connectionId": "AzureWebJobsStorage"
+    },
+    "storage2": {
+      "type": "storage",
+      "connectionId": "AzureWebJobsAzureStorageConnectionString"
     }
   }
 }
