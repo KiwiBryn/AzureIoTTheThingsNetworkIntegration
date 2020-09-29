@@ -36,8 +36,8 @@ namespace devMobile.TheThingsNetwork.MessageProcessor.Models
       public int Rssi { get; set; }
       [JsonProperty("snr")]
       public double Snr { get; set; }
-      [JsonProperty("RFChain")]
-      public int rf_chain { get; set; }
+      [JsonProperty("rf_chain")]
+      public int RFChain { get; set; }
       [JsonProperty("latitude")]
       public double Latitude { get; set; }
       [JsonProperty("longitude")]
