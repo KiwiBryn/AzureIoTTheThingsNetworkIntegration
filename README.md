@@ -33,7 +33,7 @@ For more comple configuration scenarios the AzureIoTHubMessageV2Processor suppor
 * [DPS EnrollmentGroup](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-service?WT.mc_id=IoT-MVP-5001375) based on TTN Application ID
 * [DPS EnrollmentGroup](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-service?WT.mc_id=IoT-MVP-5001375) based on TTN Application ID and port number
 
-For example, a TTN solution has two Applications one for Smart Building sensors the other for tracking maintenance staff vehicles. The smart building sensor data could be routed to an Azure IoT hub for a room utilsisation system. The vehicle position information could be routed to an Azure IoT Central instance for displaying on a dashboard. In the second scenario the maintenance vehicles e.g. [John Deere Gator](https://www.deere.com/en/gator-utility-vehicles/) could be reporting location with messages with the port id set to 10 and usage data from built in sensors on port 15 for use in a predictive maintenance system.
+For example, a TTN solution has two Applications one for Smart Building sensors the other for tracking maintenance staff vehicles. The smart building sensor data could be routed to an Azure IoT hub for a room utilisation system. The vehicle position information could be routed to an Azure IoT Central instance for displaying on a dashboard. In the second scenario the maintenance vehicles e.g. [John Deere Gator](https://www.deere.com/en/gator-utility-vehicles/) could be reporting location with messages with the port id set to 10 and usage data from built in sensors on port 15 for use in a predictive maintenance system.
 
 The key projects are a pair of [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview). 
 
