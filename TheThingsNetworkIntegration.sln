@@ -54,6 +54,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubMessageV2Process
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubMessageV3Processor", "AzureIoTHubMessageV3Processor\AzureIoTHubMessageV3Processor.csproj", "{CEA5993F-862E-482B-8035-4C0B58398296}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureIoTHubDeviceGatewayClient", "AzureIoTHubDeviceGatewayClient\AzureIoTHubDeviceGatewayClient.csproj", "{5C430618-D105-43E9-AE8A-689A009D6BCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,6 +122,10 @@ Global
 		{CEA5993F-862E-482B-8035-4C0B58398296}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEA5993F-862E-482B-8035-4C0B58398296}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CEA5993F-862E-482B-8035-4C0B58398296}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C430618-D105-43E9-AE8A-689A009D6BCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C430618-D105-43E9-AE8A-689A009D6BCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C430618-D105-43E9-AE8A-689A009D6BCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C430618-D105-43E9-AE8A-689A009D6BCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
