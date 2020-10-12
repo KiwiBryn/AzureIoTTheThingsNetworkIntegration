@@ -56,6 +56,28 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
          return globaDeviceEndpoint;
       }
 
+      public string ConnectionStringResolve(string applicationId, int port)
+      {
+         // Check to see if there is application + port specific configuration
+         string connectionString = Configuration.GetSection($"AzureIotHubConnectionString-{applicationId}-{port}").Value;
+         if (!string.IsNullOrWhiteSpace(connectionString))
+         {
+            return connectionString;
+         }
+
+         // Check to see if there is application specific configuration, otherwise run with default
+         connectionString = Configuration.GetSection($"AzureIotHubConnectionString-{applicationId}").Value;
+         if (!string.IsNullOrWhiteSpace(connectionString))
+         {
+            return connectionString;
+         }
+
+         // get the default as not a specialised configuration
+         connectionString = Configuration.GetSection("AzureIotHubConnectionStringDefault").Value;
+
+         return connectionString;
+      }
+
       public string DpsIdScopeResolve(string applicationId, int port)
       {
          // Check to see if there is application + port specific configuration
@@ -112,8 +134,22 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
       public string RegistrationIdResolve(string applicationId, int port, string deviceId)
       {
-         // Use DPSEnrollmentGroupSymmetricKey to see if cache key needs port added to make unique for when port configuration is 
+         // Use AzureIoTHub connection string to see if cache key needs port added to make unique for when port configuration is 
          // specified.Don't need to include application in cache Key as TTN configuration stops duplicate deviceIDs across applications.
+         string connectionString = Configuration.GetSection($"AzureIotHubConnectionString-{applicationId}-{port}").Value;
+         if (!string.IsNullOrWhiteSpace(connectionString))
+         {
+            return connectionString;
+         }
+
+         // Check to see if there is application specific configuration, otherwise use DPS configuration
+         connectionString = Configuration.GetSection($"AzureIotHubConnectionString-{applicationId}").Value;
+         if (!string.IsNullOrWhiteSpace(connectionString))
+         {
+            return connectionString;
+         }
+
+         // Use DPSEnrollmentGroupSymmetricKey to see if cache key needs port added to make unique for when port configuration is specified.
          string enrollmentGroupSymmetricKey = Configuration.GetSection($"DPSEnrollmentGroupSymmetricKey-{applicationId}-{port}").Value;
          if (!string.IsNullOrWhiteSpace(enrollmentGroupSymmetricKey))
          {

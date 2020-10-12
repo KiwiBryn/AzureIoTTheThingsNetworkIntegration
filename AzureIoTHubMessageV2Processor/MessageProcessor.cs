@@ -32,7 +32,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
    using Newtonsoft.Json;
    using Newtonsoft.Json.Linq;
-      
+
    using devMobile.TheThingsNetwork.MessageProcessor.Models;
 
    public static class MessageProcessor
@@ -69,11 +69,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
             try
             {
                // Do DPS magic first time device seen
-               deviceClient = await DeviceRegistration(
-                  ApplicationConfiguration.DpsGlobaDeviceEndpointResolve(),
-                  ApplicationConfiguration.DpsIdScopeResolve(payload.ApplicationId, payload.Port),
-                  ApplicationConfiguration.DpsEnrollmentGroupSymmetricKeyResolve(payload.ApplicationId, payload.Port), 
-                  payload.DeviceId);
+               deviceClient = await DeviceRegistration(payload.ApplicationId, payload.DeviceId, payload.Port);
             }
             catch (Exception ex)
             {
@@ -91,7 +87,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
                log.LogWarning("RegID:{registrationID} Device Registration TryUpdate failed", registrationId);
             }
 
-            log.LogInformation("RegID:{registrationId} Assigned to IoTHub", registrationId );
+            log.LogInformation("RegID:{registrationId} Assigned to IoTHub", registrationId);
          }
 
          // Wait for the Device Provisioning Service to complete on this or other thread
@@ -137,13 +133,19 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
          log.LogInformation("DevID:{DeviceId} Counter:{Counter} Uplink message device processing completed", payload.DeviceId, payload.Counter);
       }
 
-      static async Task<DeviceClient> DeviceRegistration(string globalDeviceEndpoint, string IdScope, string enrollmentGroupSymmetricKey, string deviceId)
+      static async Task<DeviceClient> DeviceRegistration(string applicationId, string deviceId, int port)
       {
-         DeviceClient deviceClient;
          string deviceKey;
 
-         // Compute the derived symmetric key for the DeviceId not the registrationId
-         using (var hmac = new HMACSHA256(Convert.FromBase64String(enrollmentGroupSymmetricKey)))
+         // See if AzureIoT hub connections string has been configured
+         string connectionString = ApplicationConfiguration.ConnectionStringResolve(applicationId, port);
+         if (!String.IsNullOrEmpty(connectionString))
+         {
+            return DeviceClient.CreateFromConnectionString(connectionString, deviceId);
+         }
+
+         // See if Azure DPS has been configured
+         using (var hmac = new HMACSHA256(Convert.FromBase64String(ApplicationConfiguration.DpsEnrollmentGroupSymmetricKeyResolve(applicationId, port))))
          {
             deviceKey = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(deviceId)));
          }
@@ -152,7 +154,10 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
          {
             using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
             {
-               ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, IdScope, securityProvider, transport);
+               ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(ApplicationConfiguration.DpsGlobaDeviceEndpointResolve(),
+                                                                                       ApplicationConfiguration.DpsIdScopeResolve(applicationId, port),
+                                                                                       securityProvider,
+                                                                                       transport);
 
                DeviceRegistrationResult result = await provClient.RegisterAsync();
                if (result.Status != ProvisioningRegistrationStatusType.Assigned)
@@ -162,11 +167,9 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
                IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
 
-               deviceClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp);
+               return DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp);
             }
          }
-        
-         return deviceClient;
       }
 
       static async Task DeviceTelemetrySend(DeviceClient deviceClient, PayloadUplink payloadObject)
