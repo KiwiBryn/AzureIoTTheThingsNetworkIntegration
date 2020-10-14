@@ -17,9 +17,9 @@
 namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 {
    using System;
-   using System.Collections.Concurrent;
-   using System.Security.Cryptography;
    using System.Globalization;
+   using System.Runtime.Caching;
+   using System.Security.Cryptography;
    using System.Text;
    using System.Threading.Tasks;
 
@@ -35,19 +35,23 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
    using devMobile.TheThingsNetwork.MessageProcessor.Models;
 
+   public class DeviceContext
+   {
+      public DeviceClient Uplink { get; set; }
+      public Uri Downlink { get; set; }
+   }
+
    public static class MessageProcessor
    {
-      static readonly ConcurrentDictionary<string, DeviceClient> DeviceClients = new ConcurrentDictionary<string, DeviceClient>();
+      static readonly ObjectCache DeviceClients = MemoryCache.Default;
       static readonly ApplicationConfiguration ApplicationConfiguration = new ApplicationConfiguration();
 
       [FunctionName("UplinkMessageProcessor")]
       public static async Task UplinkRun(
-         [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
+            [QueueTrigger("%UplinkQueueName%", Connection = "AzureStorageConnectionString")]
             PayloadUplink payload,
             ILogger log)
       {
-         DeviceClient deviceClient = null;
-
          // Quick n dirty hack to see what difference (if any) not processing retries makes
          if (payload.IsRetry)
          {
@@ -61,19 +65,31 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
          string registrationId = ApplicationConfiguration.RegistrationIdResolve(payload.ApplicationId, payload.Port, payload.DeviceId);
 
+         CacheItemPolicy cacheItemPolicy = new CacheItemPolicy()
+         {
+            SlidingExpiration = new TimeSpan(1, 0, 0),
+            //RemovedCallback
+         };
+
+         DeviceContext deviceContext = new DeviceContext()
+         {
+            Uplink = null,
+            Downlink = new Uri(payload.DownlinkUrl)
+         };
+
          // See if the device has already been provisioned or is being provisioned on another thread.
-         if (DeviceClients.TryAdd(registrationId, deviceClient))
+         if (DeviceClients.Add(registrationId, deviceContext, cacheItemPolicy))
          {
             log.LogInformation("RegID:{registrationId} Device provisioning start", registrationId);
 
             try
             {
-               // Do DPS magic first time device seen
-               deviceClient = await DeviceRegistration(payload.ApplicationId, payload.DeviceId, payload.Port);
+               // Get DeviceClient if first time device seen
+               deviceContext.Uplink = await DeviceRegistration(payload.ApplicationId, payload.DeviceId, payload.Port);
             }
             catch (Exception ex)
             {
-               if (!DeviceClients.TryRemove(registrationId, out deviceClient))
+               if ( DeviceClients.Remove(registrationId) == null)
                {
                   log.LogWarning("RegID:{registrationID} Device Registration TryRemove failed", registrationId);
                }
@@ -82,10 +98,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
                throw;
             }
 
-            if (!DeviceClients.TryUpdate(registrationId, deviceClient, null))
-            {
-               log.LogWarning("RegID:{registrationID} Device Registration TryUpdate failed", registrationId);
-            }
+            DeviceClients.Set(registrationId, deviceContext, cacheItemPolicy);
 
             log.LogInformation("RegID:{registrationId} Assigned to IoTHub", registrationId);
          }
@@ -98,30 +111,31 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
          // Wait for the deviceClient to be configured if process kicked off on another thread, no timeout as will get taken care of by function timeout...
          do
          {
-            if (!DeviceClients.TryGetValue(registrationId, out deviceClient))
+            deviceContext = (DeviceContext)DeviceClients.Get(registrationId);
+            if (deviceContext == null)
             {
-               log.LogWarning("RegID:{registrationId} Device provisioning polling TryGet do while loop failed", registrationId);
+               log.LogError("RegID:{registrationId} DeviceContext provisioning polling Get failed", registrationId);
 
-               throw new ApplicationException($"RegID:{registrationId} Device provisioning polling TryGet do while loop failed");
+               throw new ApplicationException($"RegID:{registrationId} DeviceContext provisioning polling Get failed");
             }
 
-            if (deviceClient == null)
+            if (deviceContext.Uplink == null)
             {
                log.LogInformation($"RegID:{registrationId} Device provisioning polling delay:{deviceProvisioningPollingDelay}mSec", registrationId, deviceProvisioningPollingDelay);
                await Task.Delay(deviceProvisioningPollingDelay);
             }
          }
-         while (deviceClient == null);
+         while (deviceContext.Uplink == null);
 
          log.LogInformation("DevID:{DeviceId} Counter:{counter} Payload Send start", payload.DeviceId, payload.Counter);
 
          try
          {
-            await DeviceTelemetrySend(deviceClient, payload);
+            await DeviceTelemetrySend(deviceContext.Uplink, payload);
          }
          catch (Exception ex)
          {
-            if (!DeviceClients.TryRemove(registrationId, out deviceClient))
+            if (DeviceClients.Remove(registrationId) == null)
             {
                log.LogWarning("DevID:{DeviceId} Counter:{Counter} Payload SendEventAsync TryRemove failed", payload.DeviceId, payload.Counter);
             }
