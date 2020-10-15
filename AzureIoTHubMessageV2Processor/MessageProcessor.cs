@@ -67,7 +67,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
          CacheItemPolicy cacheItemPolicy = new CacheItemPolicy()
          {
-            SlidingExpiration = new TimeSpan(1, 0, 0),
+            SlidingExpiration = new TimeSpan(1, 0, 0, 0),
             //RemovedCallback
          };
 
