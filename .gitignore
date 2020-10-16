@@ -359,3 +359,4 @@ healthchecksdb
 /AzureIoTHubDeviceGatewayClient/Properties/launchSettings.json
 /AzureIoTHubCommandAndMessageHandlers/Properties/launchSettings.json
 /AzureIoTHubCommandAndMessageHandler/Properties/launchSettings.json
+/TTNMQTTIntegrationClient/Properties/launchSettings.json
