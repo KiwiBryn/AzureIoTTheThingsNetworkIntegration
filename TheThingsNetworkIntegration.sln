@@ -60,7 +60,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubCommandAndMessag
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubCommandAndMessageHandler", "AzureIoTHubCommandAndMessageHandler\AzureIoTHubCommandAndMessageHandler.csproj", "{2E76132A-6978-4813-B622-BAF0E880266B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TTNMQTTIntegrationClient", "TTNMQTTIntegrationClient\TTNMQTTIntegrationClient.csproj", "{0B947990-6B85-4EC6-A3A4-BA2D98920B71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTNMQTTIntegrationClient", "TTNMQTTIntegrationClient\TTNMQTTIntegrationClient.csproj", "{0B947990-6B85-4EC6-A3A4-BA2D98920B71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureIoTHubAMQPNetLite", "AzureIoTHubAMQPNetLite\AzureIoTHubAMQPNetLite.csproj", "{51F3DBBB-ECEC-4FB3-B88B-17F9C56B1DE0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -144,6 +146,10 @@ Global
 		{0B947990-6B85-4EC6-A3A4-BA2D98920B71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B947990-6B85-4EC6-A3A4-BA2D98920B71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B947990-6B85-4EC6-A3A4-BA2D98920B71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51F3DBBB-ECEC-4FB3-B88B-17F9C56B1DE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51F3DBBB-ECEC-4FB3-B88B-17F9C56B1DE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51F3DBBB-ECEC-4FB3-B88B-17F9C56B1DE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51F3DBBB-ECEC-4FB3-B88B-17F9C56B1DE0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
