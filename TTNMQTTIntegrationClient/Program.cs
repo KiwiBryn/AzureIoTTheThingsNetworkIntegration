@@ -105,9 +105,9 @@ namespace devMobile.TheThingsNetwork.TTNMQTTIntegrationClient
 
                LastSentAt = DateTime.UtcNow;
 
-               Console.WriteLine($"{DateTime.UtcNow:HH:MM:ss} PublishAsync Start");
+               Console.WriteLine($"{DateTime.UtcNow:HH:mm:ss} PublishAsync Start");
                await mqttClient.PublishAsync(message);
-               Console.WriteLine($"{DateTime.UtcNow:HH:MM:ss} PublishAsync Finish");
+               Console.WriteLine($"{DateTime.UtcNow:HH:mm:ss} PublishAsync Finish");
             }
          }
       }
@@ -118,11 +118,11 @@ namespace devMobile.TheThingsNetwork.TTNMQTTIntegrationClient
          {
             PayloadUplink payload = JsonConvert.DeserializeObject<PayloadUplink>(e.ApplicationMessage.ConvertPayloadToString());
 
-            Console.WriteLine($"{DateTime.UtcNow:HH:MM:ss} ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic} ReceivedAt:{payload.Metadata.ReceivedAtUtc} Payload:{payload.PayloadRaw}");
+            Console.WriteLine($"{DateTime.UtcNow:HH:mm:ss} ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic} ReceivedAt:{payload.Metadata.ReceivedAtUtc} Payload:{payload.PayloadRaw}");
          }
          else
          {
-            Console.WriteLine($"{DateTime.UtcNow:HH:MM:ss} ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic}");
+            Console.WriteLine($"{DateTime.UtcNow:HH:mm:ss} ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic}");
          }
       }
 
