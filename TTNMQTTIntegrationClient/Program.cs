@@ -60,7 +60,7 @@ namespace devMobile.TheThingsNetwork.TTNMQTTIntegrationClient
          deviceId = args[4];
          payload = args[5];
 
-         Console.WriteLine($"MQTT Server:{server} ApplicationID:{applicationId} ClientID:{clientId} deviceID:{deviceId} Feedname:{payload}");
+         Console.WriteLine($"MQTT Server:{server} ApplicationID:{applicationId} ClientID:{clientId} deviceID:{deviceId} Payload:{payload}");
 
          mqttOptions = new MqttClientOptionsBuilder()
             .WithTcpServer(server)
