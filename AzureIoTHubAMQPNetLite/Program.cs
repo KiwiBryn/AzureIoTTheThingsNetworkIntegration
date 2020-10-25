@@ -25,7 +25,6 @@
 namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
 {
    using System;
-   using System.Linq;
    using System.Security.Cryptography;
    using System.Text;
 #if RECEIVE_THREAD
@@ -89,16 +88,16 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
             session = new Session(connection);
 
 #if RECEIVE_THREAD
-            receiverThread = new Thread(ReceiveCommands);
+            receiverThread = new Thread(ReceiveCommandsLoop);
             receiverThread.Start();
 
             receiverThread.Join();
 #endif
             string entity = Fx.Format("/devices/{0}/messages/deviceBound", deviceId);
 
+#if RECEIVE_EVENT
             ReceiverLink receiveLink = new ReceiverLink(session, "receive-link", entity);
 
-#if RECEIVE_EVENT
             receiveLink.Start(200, onMessage);
 #endif
             DateTime LastSentAt = DateTime.UtcNow;
@@ -115,15 +114,18 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
                   LastSentAt = DateTime.UtcNow;
                }
             }
+
+#if RECEIVE_EVENT
+            await receiveLink.CloseAsync();
+#endif
+            await session.CloseAsync();
+            await connection.CloseAsync();
          }
          Console.WriteLine("Press <ENTER> to exit");
          Console.ReadLine();
-
-         session.Close();
-         connection.Close();
       }
 
-      static private void SendEvent()
+      static private async void SendEvent()
       {
          string entity = Fx.Format("/devices/{0}/messages/events", deviceId);
 
@@ -135,12 +137,12 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
             BodySection = new Data() { Binary = messageValue }
          };
 
-         senderLink.Send(message);
-         senderLink.Close();
+         await senderLink.SendAsync(message);
+         await senderLink.CloseAsync();
       }
 
 #if RECEIVE_THREAD
-      static private void ReceiveCommandsLoop()
+      static private async void ReceiveCommandsLoop()
       {
          string entity = Fx.Format("/devices/{0}/messages/deviceBound", deviceId);
 
@@ -148,7 +150,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
 
          while (true)
          {
-            Message received = receiveLink.Receive();
+            Message received = await receiveLink.ReceiveAsync();
             if (received != null)
             {
                Data data = (Data)received.BodySection;
@@ -164,7 +166,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
                receiveLink.Accept(received);
             }
          }
-         receiveLink.Close();
+         //await receiveLink.CloseAsync();
       }
 #endif
 

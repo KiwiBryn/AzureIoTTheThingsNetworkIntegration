@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;RECEIVE_EVENT</DefineConstants>
+    <DefineConstants>TRACE;RECEIVE_THREAD</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
