@@ -360,3 +360,4 @@ healthchecksdb
 /AzureIoTHubCommandAndMessageHandlers/Properties/launchSettings.json
 /AzureIoTHubCommandAndMessageHandler/Properties/launchSettings.json
 /TTNMQTTIntegrationClient/Properties/launchSettings.json
+/AzureIoTHubAMQPNetLite/Properties/launchSettings.json
