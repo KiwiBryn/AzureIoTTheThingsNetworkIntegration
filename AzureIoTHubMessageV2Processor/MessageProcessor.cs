@@ -181,7 +181,20 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
                IAuthenticationMethod authentication = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (securityProvider as SecurityProviderSymmetricKey).GetPrimaryKey());
 
-               return DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp);
+               return DeviceClient.Create(result.AssignedHub,
+                  authentication,
+                  new ITransportSettings[]
+                  {
+                     new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
+                     {
+                        PrefetchCount = 0,
+                        AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                        {
+                           Pooling = true,
+                        }
+                     }
+                  }
+               );
             }
          }
       }
