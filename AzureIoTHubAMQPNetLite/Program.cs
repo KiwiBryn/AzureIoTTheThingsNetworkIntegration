@@ -108,7 +108,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
                if ((DateTime.UtcNow - LastSentAt) > new TimeSpan(0, 0, 30))
                {
                   Console.WriteLine($"{DateTime.UtcNow:HH:mm:ss} SendEvent Start");
-                  SendEvent();
+                  await SendEvent();
                   Console.WriteLine($"{DateTime.UtcNow:HH:mm:ss} SendEvent Finish");
 
                   LastSentAt = DateTime.UtcNow;
@@ -125,7 +125,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
          Console.ReadLine();
       }
 
-      static private async void SendEvent()
+      static private async Task SendEvent()
       {
          string entity = Fx.Format("/devices/{0}/messages/events", deviceId);
 
@@ -238,9 +238,12 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
 
          string expiryEpoch = expiryDateTimeOffset.ToUnixTimeSeconds().ToString();
          string stringToSign = HttpUtility.UrlEncode(resourceUri) + "\n" + expiryEpoch;
+         string signature;
 
-         HMACSHA256 hmac = new HMACSHA256(Convert.FromBase64String(key));
-         string signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
+         using (var hmac = new HMACSHA256(Convert.FromBase64String(key)))
+         {
+            signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
+         }
 
          string token = $"SharedAccessSignature sr={HttpUtility.UrlEncode(resourceUri)}&sig={HttpUtility.UrlEncode(signature)}&se={expiryEpoch}";
 
