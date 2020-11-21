@@ -1,9 +1,5 @@
 {
   "dependencies": {
-    "appInsights1": {
-      "type": "appInsights",
-      "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY"
-    },
     "storage2": {
       "type": "storage",
       "connectionId": "AzureStorageConnectionString"
@@ -11,6 +7,10 @@
     "storage1": {
       "type": "storage",
       "connectionId": "AzureWebJobsStorage"
+    },
+    "appInsights1": {
+      "type": "appInsights",
+      "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY"
     }
   }
 }

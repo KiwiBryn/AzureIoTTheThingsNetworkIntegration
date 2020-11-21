@@ -1,0 +1,34 @@
+{
+  "dependencies": {
+    "appInsights1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/TTNV2Diagnostics",
+      "type": "appInsights.azure",
+      "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
+      "secretStore": null
+    },
+    "secrets1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/ttnv2integration",
+      "type": "secrets.keyVault",
+      "connectionId": "KeyVaultUri",
+      "secretStore": null
+    },
+    "storage3": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnv2integration",
+      "type": "storage.azure",
+      "connectionId": "AzureStorageConnectionString",
+      "secretStore": "AzureKeyVault"
+    },
+    "storage2": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnv2integration",
+      "type": "storage.azure",
+      "connectionId": "AzureWebJobsAzureStorageConnectionString",
+      "secretStore": "AzureKeyVault"
+    },
+    "storage1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnv2integration",
+      "type": "storage.azure",
+      "connectionId": "AzureWebJobsStorage",
+      "secretStore": "AzureKeyVault"
+    }
+  }
+}

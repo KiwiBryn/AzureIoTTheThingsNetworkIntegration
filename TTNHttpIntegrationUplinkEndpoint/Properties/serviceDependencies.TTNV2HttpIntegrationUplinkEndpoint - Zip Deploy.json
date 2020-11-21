@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "storage2": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnv2integration",
+      "type": "storage.azure",
+      "connectionId": "AzureStorageConnectionString",
+      "secretStore": "AzureAppSettings"
+    },
+    "storage1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/ttnv2integration",
+      "type": "storage.azure",
+      "connectionId": "AzureWebJobsStorage",
+      "secretStore": "AzureAppSettings"
+    },
+    "appInsights1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/TTNV2Diagnostics",
+      "type": "appInsights.azure",
+      "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
+      "secretStore": "AzureAppSettings"
+    }
+  }
+}
