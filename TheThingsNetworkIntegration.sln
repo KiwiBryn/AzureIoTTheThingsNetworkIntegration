@@ -35,9 +35,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SamplePayloads", "SamplePay
 		SamplePayloads\BarometricPressureRelativeHumidityTemperature.json = SamplePayloads\BarometricPressureRelativeHumidityTemperature.json
 		SamplePayloads\GPS.json = SamplePayloads\GPS.json
 		SamplePayloads\GPSAccelerometerGyrometer.json = SamplePayloads\GPSAccelerometerGyrometer.json
+		SamplePayloads\GPSNestingTest.json = SamplePayloads\GPSNestingTest.json
 		SamplePayloads\IMU.json = SamplePayloads\IMU.json
 		SamplePayloads\LuminosityPresence.json = SamplePayloads\LuminosityPresence.json
+		SamplePayloads\PayloadV1.json = SamplePayloads\PayloadV1.json
+		SamplePayloads\PayloadV2.json = SamplePayloads\PayloadV2.json
 		SamplePayloads\PayloadWithAllFieldTypes.json = SamplePayloads\PayloadWithAllFieldTypes.json
+		SamplePayloads\PayloadWithGPSField.json = SamplePayloads\PayloadWithGPSField.json
+		SamplePayloads\PayloadWithSimpleFieldTypes.json = SamplePayloads\PayloadWithSimpleFieldTypes.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubUplinkMessageProcessor", "AzureIoTHubUplinkMessageProcessor\AzureIoTHubUplinkMessageProcessor.csproj", "{55681E71-C8AF-4845-873C-8B272844A0B7}"
@@ -62,7 +67,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubCommandAndMessag
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTNMQTTIntegrationClient", "TTNMQTTIntegrationClient\TTNMQTTIntegrationClient.csproj", "{0B947990-6B85-4EC6-A3A4-BA2D98920B71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureIoTHubAMQPNetLite", "AzureIoTHubAMQPNetLite\AzureIoTHubAMQPNetLite.csproj", "{51F3DBBB-ECEC-4FB3-B88B-17F9C56B1DE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureIoTHubAMQPNetLite", "AzureIoTHubAMQPNetLite\AzureIoTHubAMQPNetLite.csproj", "{51F3DBBB-ECEC-4FB3-B88B-17F9C56B1DE0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
