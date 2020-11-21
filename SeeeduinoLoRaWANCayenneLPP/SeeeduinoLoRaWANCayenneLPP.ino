@@ -139,8 +139,8 @@ void loop(void)
   PrintHexBuffer (lppBuffer, lppLen);
 
   //result = lora.transferPacket("Hello World!", 10);
-  //result = lora.transferPacket(lppBuffer, lppLen);
-  result = lora.transferPacketWithConfirmed(lppBuffer, lppLen);
+  result = lora.transferPacket(lppBuffer, lppLen);
+  //result = lora.transferPacketWithConfirmed(lppBuffer, lppLen);
 
   if(result)
   {
