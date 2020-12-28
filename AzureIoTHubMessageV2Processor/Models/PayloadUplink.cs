@@ -20,6 +20,7 @@ namespace devMobile.TheThingsNetwork.MessageProcessor.Models
    using System.Collections.Generic;
 
    using Newtonsoft.Json;
+   using Newtonsoft.Json.Linq;
 
    // Production version of classes for unpacking HTTP payload https://json2csharp.com/
    public class Gateway // https://github.com/TheThingsNetwork/ttn/blob/36761935d1867ce2cd70a80ceef197a124e2d276/core/types/gateway_metadata.go
@@ -80,7 +81,7 @@ namespace devMobile.TheThingsNetwork.MessageProcessor.Models
       public string PayloadRaw { get; set; }
       // finally settled on an Object
       [JsonProperty("payload_fields")]
-      public Object PayloadFields { get; set; }
+      public JToken PayloadFields { get; set; }
       [JsonProperty("metadata")]
       public Metadata Metadata { get; set; }
       [JsonProperty("downlink_url")]

@@ -203,7 +203,6 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
       {
          JObject telemetryEvent = new JObject();
 
-         JObject payloadFields = (JObject)payloadObject.PayloadFields;
          telemetryEvent.Add("DeviceEUI", payloadObject.DeviceEui);
          telemetryEvent.Add("Retry", payloadObject.IsRetry);
          telemetryEvent.Add("Counter", payloadObject.Counter);
@@ -214,12 +213,9 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
          telemetryEvent.Add("ReceivedAtUTC", payloadObject.Metadata.ReceivedAtUtc);
 
          // If the payload has been unpacked in TTN backend add fields to telemetry event payload
-         if (payloadFields != null)
+         if (payloadObject.PayloadFields != null)
          {
-            foreach (JProperty child in payloadFields.Children())
-            {
-               EnumerateChildren(telemetryEvent, child);
-            }
+            EnumerateChildren(telemetryEvent, payloadObject.PayloadFields);
          }
 
          // Send the message to Azure IoT Hub/Azure IoT Central
