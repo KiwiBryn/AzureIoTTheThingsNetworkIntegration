@@ -33,12 +33,16 @@ namespace devMobile.TheThingsNetwork.JsonDeserialisation
             {
                Payload payload = JsonConvert.DeserializeObject<Payload>(File.ReadAllText(args[0]));
 
-               JObject payloadFields = (JObject)payload.payload_fields;
+               JToken payloadFields = (JToken)payload.payload_fields;
 
-               foreach (JProperty child in payloadFields.Children())
-               {
-                  EnumerateChildren(0, child);
-               }
+               EnumerateChildren(0, payloadFields);
+
+               //JObject payloadFields = (JObject)payload.payload_fields;
+
+               //foreach (JProperty child in payloadFields.Children())
+               //{
+               //   EnumerateChildren(0, child);
+               //}
             }
          }
          catch (Exception ex)
@@ -109,7 +113,8 @@ namespace devMobile.TheThingsNetwork.JsonDeserialisation
       public int counter { get; set; }
       public bool is_retry { get; set; }
       public string payload_raw { get; set; }
-      public Object payload_fields { get; set; }
+      //public Object payload_fields { get; set; }
+      public JToken payload_fields { get; set; }
       public Metadata metadata { get; set; }
       public string downlink_url { get; set; }
    }
