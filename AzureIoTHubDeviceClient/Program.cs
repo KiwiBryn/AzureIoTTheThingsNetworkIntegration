@@ -54,7 +54,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubDeviceClient
 
             JObject payloadFields = (JObject)payload.payload_fields;
 
-            using (azureIoTHubClient = DeviceClient.CreateFromConnectionString(azureIoTHubconnectionString, TransportType.Amqp))
+            using (azureIoTHubClient = DeviceClient.CreateFromConnectionString(azureIoTHubconnectionString, TransportType.Amqp_Tcp_Only))
             {
                await azureIoTHubClient.OpenAsync();
 
