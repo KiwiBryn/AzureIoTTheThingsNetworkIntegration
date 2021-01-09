@@ -201,16 +201,17 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubMessageProcessor
 
       static async Task DeviceTelemetrySend(DeviceClient deviceClient, PayloadUplink payloadObject)
       {
-         JObject telemetryEvent = new JObject();
-
-         telemetryEvent.Add("DeviceEUI", payloadObject.DeviceEui);
-         telemetryEvent.Add("Retry", payloadObject.IsRetry);
-         telemetryEvent.Add("Counter", payloadObject.Counter);
-         telemetryEvent.Add("DeviceID", payloadObject.DeviceId);
-         telemetryEvent.Add("ApplicationID", payloadObject.ApplicationId);
-         telemetryEvent.Add("Port", payloadObject.Port);
-         telemetryEvent.Add("PayloadRaw", payloadObject.PayloadRaw);
-         telemetryEvent.Add("ReceivedAtUTC", payloadObject.Metadata.ReceivedAtUtc);
+         JObject telemetryEvent = new JObject
+         {
+            { "DeviceEUI", payloadObject.DeviceEui },
+            { "Retry", payloadObject.IsRetry },
+            { "Counter", payloadObject.Counter },
+            { "DeviceID", payloadObject.DeviceId },
+            { "ApplicationID", payloadObject.ApplicationId },
+            { "Port", payloadObject.Port },
+            { "PayloadRaw", payloadObject.PayloadRaw },
+            { "ReceivedAtUTC", payloadObject.Metadata.ReceivedAtUtc }
+         };
 
          // If the payload has been unpacked in TTN backend add fields to telemetry event payload
          if (payloadObject.PayloadFields != null)

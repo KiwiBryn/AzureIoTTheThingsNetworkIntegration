@@ -80,7 +80,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
          string audience = Fx.Format("{0}/devices/{1}", server, deviceId);
          string resourceUri = Fx.Format("{0}/devices/{1}", server, deviceId);
 
-         string sasToken = generateSasToken(resourceUri, accessKey, null, new TimeSpan(1, 0, 0));
+         string sasToken = GenerateSasToken(resourceUri, accessKey, null, new TimeSpan(1, 0, 0));
          bool cbs = PutCbsToken(connection, sasToken, audience);
 
          if (cbs)
@@ -98,7 +98,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
 #if RECEIVE_EVENT
             ReceiverLink receiveLink = new ReceiverLink(session, "receive-link", entity);
 
-            receiveLink.Start(200, onMessage);
+            receiveLink.Start(200, OnMessage);
 #endif
             DateTime LastSentAt = DateTime.UtcNow;
             Console.WriteLine("Press any key to exit");
@@ -171,7 +171,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
 #endif
 
 #if RECEIVE_EVENT
-      static private void onMessage(IReceiverLink receiveLink, Message message)
+      static private void OnMessage(IReceiverLink receiveLink, Message message)
       {
          Data data = (Data)message.BodySection;
 
@@ -198,11 +198,15 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
          var cbsReceiver = new ReceiverLink(session, cbsReplyToAddress, "$cbs");
 
          // construct the put-token message
-         var request = new Message(shareAccessSignature);
-         request.Properties = new Properties();
-         request.Properties.MessageId = Guid.NewGuid().ToString();
-         request.Properties.ReplyTo = cbsReplyToAddress;
-         request.ApplicationProperties = new ApplicationProperties();
+         var request = new Message(shareAccessSignature)
+         {
+            Properties = new Properties
+            {
+               MessageId = Guid.NewGuid().ToString(),
+               ReplyTo = cbsReplyToAddress
+            },
+            ApplicationProperties = new ApplicationProperties()
+         };
          request.ApplicationProperties["operation"] = "put-token";
          request.ApplicationProperties["type"] = "azure-devices.net:sastoken";
          request.ApplicationProperties["name"] = audience;
@@ -217,7 +221,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
          else
          {
             int statusCode = (int)response.ApplicationProperties["status-code"];
-            string statusCodeDescription = (string)response.ApplicationProperties["status-description"];
+            // string statusCodeDescription = (string)response.ApplicationProperties["status-description"];
             if (statusCode != (int)202 && statusCode != (int)200) // !Accepted && !OK
             {
                result = false;
@@ -232,7 +236,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubAMQPNetLite
          return result;
       }
 
-      public static string generateSasToken(string resourceUri, string key, string policyName, TimeSpan timeToLive)
+      public static string GenerateSasToken(string resourceUri, string key, string policyName, TimeSpan timeToLive)
       {
          DateTimeOffset expiryDateTimeOffset = new DateTimeOffset(DateTime.UtcNow.Add(timeToLive));
 
