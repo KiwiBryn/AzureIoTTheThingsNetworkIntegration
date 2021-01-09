@@ -52,7 +52,7 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubDeviceClient
          {
             payload = JsonConvert.DeserializeObject<Payload>(File.ReadAllText(filename));
 
-            JObject payloadFields = (JObject)payload.payload_fields;
+            JObject payloadFields = (JObject)payload.PayloadFields;
 
             using (azureIoTHubClient = DeviceClient.CreateFromConnectionString(azureIoTHubconnectionString, TransportType.Amqp_Tcp_Only))
             {
@@ -113,39 +113,65 @@ namespace devMobile.TheThingsNetwork.AzureIoTHubDeviceClient
 
    public class Gateway
    {
-      public string gtw_id { get; set; }
-      public long timestamp { get; set; }
-      public DateTime time { get; set; }
-      public int channel { get; set; }
-      public int rssi { get; set; }
-      public double snr { get; set; }
-      public int rf_chain { get; set; }
-      public double latitude { get; set; }
-      public double longitude { get; set; }
-      public int altitude { get; set; }
+      [JsonProperty("gtw_id")]
+      public string GatewayId { get; set; }
+      [JsonProperty("timestamp")]
+      public long Timestamp { get; set; }
+      [JsonProperty("time")]
+      public DateTime Time { get; set; }
+      [JsonProperty("channel")]
+      public int Channel { get; set; }
+      [JsonProperty("rssi")]
+      public int Rssi { get; set; }
+      [JsonProperty("snr")]
+      public double Snr { get; set; }
+      [JsonProperty("rf_Chain")]
+      public int RFChain { get; set; }
+      [JsonProperty("latitude")]
+      public double Latitude { get; set; }
+      [JsonProperty("longitude")]
+      public double Longitude { get; set; }
+      [JsonProperty("altitude")]
+      public int Altitude { get; set; }
    }
 
    public class Metadata
    {
-      public string time { get; set; }
-      public double frequency { get; set; }
-      public string modulation { get; set; }
-      public string data_rate { get; set; }
-      public string coding_rate { get; set; }
-      public List<Gateway> gateways { get; set; }
+      [JsonProperty("time")]
+      public string Time { get; set; }
+      [JsonProperty("frequency")]
+      public double Frequency { get; set; }
+      [JsonProperty("modulation")]
+      public string Modulation { get; set; }
+      [JsonProperty("data_rate")]
+      public string DataRate { get; set; }
+      [JsonProperty("coding_rate")]
+      public string CodingRate { get; set; }
+      [JsonProperty("gateways")]
+      public List<Gateway> Gateways { get; set; }
    }
 
    public class Payload
    {
-      public string app_id { get; set; }
-      public string dev_id { get; set; }
-      public string hardware_serial { get; set; }
-      public int port { get; set; }
-      public int counter { get; set; }
-      public bool is_retry { get; set; }
-      public string payload_raw { get; set; }
-      public Object payload_fields { get; set; }
-      public Metadata metadata { get; set; }
-      public string downlink_url { get; set; }
+      [JsonProperty("app_id")]
+      public string ApplicationId{ get; set; }
+      [JsonProperty("dev_id")]
+      public string DeviceId { get; set; }
+      [JsonProperty("hardware_serial")]
+      public string HardwareSerial { get; set; }
+      [JsonProperty("port")]
+      public int Port { get; set; }
+      [JsonProperty("counter")]
+      public int Counter { get; set; }
+      [JsonProperty("is_retry")]
+      public bool IsRetry { get; set; }
+      [JsonProperty("payload_raw")]
+      public string PayloadRaw { get; set; }
+      [JsonProperty("payload_fields")]
+      public Object PayloadFields { get; set; }
+      [JsonProperty("metadata")]
+      public Metadata Metadata { get; set; }
+      [JsonProperty("downlink_url")]
+      public string Downlink_url { get; set; }
    }
 }
