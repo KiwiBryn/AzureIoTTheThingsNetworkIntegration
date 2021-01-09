@@ -98,11 +98,11 @@ namespace devMobile.TheThingsNetwork.AzureDeviceProvisioningServiceClient
                   using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, authentication, TransportType.Amqp))
                   {
                      Console.WriteLine("DeviceClient OpenAsync.");
-                     await iotClient.OpenAsync().ConfigureAwait(false);
+                     await iotClient.OpenAsync();
                      Console.WriteLine("DeviceClient SendEventAsync.");
-                     await iotClient.SendEventAsync(new Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
+                     await iotClient.SendEventAsync(new Message(Encoding.UTF8.GetBytes("TestMessage")));
                      Console.WriteLine("DeviceClient CloseAsync.");
-                     await iotClient.CloseAsync().ConfigureAwait(false);
+                     await iotClient.CloseAsync();
                   }
                }
             }
